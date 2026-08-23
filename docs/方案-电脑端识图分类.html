@@ -1,0 +1,1221 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>方案 · 电脑端识图分类</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+    color:#1e293b;
+    background:
+      radial-gradient(900px 420px at 90% -8%,rgba(37,99,235,.10),transparent 58%),
+      radial-gradient(700px 380px at -8% 18%,rgba(16,185,129,.08),transparent 58%),
+      #f4f7fb;
+    min-height:100vh;line-height:1.65}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px clamp(12px,2vw,28px) 80px}
+  .eyebrow{display:inline-flex;font-size:12px;font-weight:700;color:#1d4ed8;background:#dbeafe;border:1px solid #bfdbfe;padding:4px 12px;border-radius:999px}
+  h1{font-size:clamp(24px,3.4vw,32px);font-weight:800;margin:12px 0 6px;letter-spacing:-.02em}
+  .sub{font-size:14px;color:#64748b;max-width:820px}
+  .sub b{color:#334155}
+  .facts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+  .fact{font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;background:#fff;border:1px solid #e2e8f0;color:#334155}
+  .fact.ok{background:#ecfdf5;border-color:#a7f3d0;color:#047857}
+  .fact.no{background:#fff7ed;border-color:#fed7aa;color:#c2410c}
+  nav.toc{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 6px}
+  nav.toc a{font-size:13px;font-weight:700;color:#1d4ed8;text-decoration:none;background:#fff;border:1px solid #dbeafe;padding:6px 12px;border-radius:10px}
+  nav.toc a:hover{background:#eff6ff}
+  .stage{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:18px 18px 20px;margin:18px 0;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+  .stage h2{font-size:17px;font-weight:800;margin-bottom:4px}
+  .hint{font-size:13px;color:#64748b;margin-bottom:14px}
+  .hint b{color:#334155}
+  .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .cols2{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+  @media (max-width:900px){.cols,.cols2{grid-template-columns:1fr}}
+  .card{border:1px solid #e2e8f0;background:#f8fafc;border-radius:14px;padding:12px 14px}
+  .card i{display:block;font-style:normal;font-size:11px;font-weight:800;color:#2563eb;margin-bottom:4px}
+  .card b{display:block;font-size:14px;margin-bottom:4px}
+  .card span{display:block;font-size:12.5px;color:#64748b}
+  .flow{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding:2px 0 8px}
+  .step{flex:1 1 0;min-width:140px;border:2px solid #e2e8f0;background:#f8fafc;border-radius:14px;padding:10px}
+  .step.on{border-color:#2563eb;background:#eff6ff}
+  .step i{display:block;font-style:normal;font-size:11px;font-weight:800;color:#2563eb}
+  .step b{display:block;font-size:13px;margin:2px 0}
+  .step span{display:block;font-size:12px;color:#64748b}
+  .arr{flex:none;width:26px;display:flex;align-items:center;justify-content:center;color:#2563eb;font-weight:800}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;padding:8px 10px;background:#f8fafc;color:#64748b;font-weight:700;border-bottom:1px solid #e2e8f0}
+  td{padding:8px 10px;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:top}
+  .ok{color:#047857;font-weight:700}
+  .no{color:#c2410c;font-weight:700}
+  .desk{
+    border:10px solid #1e293b;border-radius:16px;background:#12141a;overflow:hidden;
+    box-shadow:0 18px 40px rgba(15,23,42,.18)}
+  .desk .bar{height:28px;background:#0f172a;display:flex;align-items:center;gap:6px;padding:0 10px}
+  .desk .dot{width:8px;height:8px;border-radius:50%}
+  .desk .win{display:grid;grid-template-columns:168px 1fr;min-height:420px;color:#e2e8f0;font-size:12px}
+  .desk .side{background:#1a1d26;border-right:1px solid #2a2f3c;padding:10px}
+  .desk .main{padding:10px}
+  .desk .h{color:#94a3b8;font-size:10px;letter-spacing:.06em;margin:8px 0 4px}
+  .desk .t{display:block;padding:5px 8px;border-radius:7px;margin-bottom:3px}
+  .desk .t.on{background:#2b3958}
+  .desk .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .desk .ph{aspect-ratio:1;border-radius:8px;background:linear-gradient(145deg,#334155,#1e293b)}
+  .desk .ph.a{background:linear-gradient(145deg,#166534,#14532d)}
+  .desk .ph.b{background:linear-gradient(145deg,#1e3a8a,#172554)}
+  .desk .ph.c{background:linear-gradient(145deg,#9a3412,#7c2d12)}
+  .desk .tb{display:flex;gap:6px;margin-bottom:8px}
+  .desk .tb i{flex:1;height:18px;border-radius:6px;background:#2a3348;font-style:normal}
+  .callout{border-radius:12px;padding:10px 12px;font-size:13px;margin:10px 0}
+  .callout.ok{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .callout.warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  code{background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:5px;font-size:12px}
+  .sku{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media (max-width:800px){.sku{grid-template-columns:1fr}}
+  .sku .card.rec{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  footer{font-size:12px;color:#94a3b8;margin-top:8px}
+  .opsbar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+  .opsbar button{font-size:12px;font-weight:700;border:1px solid #dbeafe;background:#fff;color:#1d4ed8;border-radius:8px;padding:6px 10px;cursor:pointer}
+  .opsbar button.on{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+  .view{display:none}
+  .view.on{display:block}
+  .app{border:10px solid #1e293b;border-radius:16px;overflow:hidden;background:#12141a;box-shadow:0 18px 40px rgba(15,23,42,.16);position:relative}
+  .titlebar{height:32px;background:#0f172a;display:flex;align-items:center;gap:6px;padding:0 12px;color:#94a3b8;font-size:12px}
+  .dot{width:8px;height:8px;border-radius:50%}
+  .appshell{display:grid;grid-template-columns:188px 1fr;min-height:480px;color:#e2e8f0;font-size:12.5px}
+  .appside{background:#1a1d26;border-right:1px solid #2a2f3c;padding:12px 10px}
+  .appbrand{font-weight:800;font-size:14px;margin:0 6px 10px}
+  .apph{color:#64748b;font-size:10px;letter-spacing:.08em;margin:10px 6px 4px}
+  .appt{display:flex;justify-content:space-between;padding:6px 8px;border-radius:7px;margin-bottom:2px;cursor:pointer}
+  .appt.on{background:#2b3958}
+  .appt span{color:#94a3b8}
+  .appmain{display:flex;flex-direction:column;min-width:0}
+  .appbar{display:flex;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid #2a2f3c}
+  .abtn{background:#2a3348;border:0;color:#e2e8f0;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:700;cursor:pointer}
+  .abtn.p{background:#3b82f6;color:#fff}
+  .abtn.d{background:#7f1d1d}
+  .q{flex:1;min-width:160px;background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:8px;padding:7px 10px;font-size:12px}
+  .qd{width:128px;background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:8px;padding:7px 8px;font-size:12px}
+  .daterow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid #2a2f3c;color:#94a3b8;font-size:12px}
+  .appgrid{flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px;align-content:start;min-height:280px}
+  .ph{aspect-ratio:1;border-radius:10px;position:relative;overflow:hidden;cursor:pointer}
+  .ph i{position:absolute;left:6px;bottom:6px;right:6px;font-style:normal;font-size:10px;color:#fff;text-shadow:0 1px 4px #000}
+  .p1{background:linear-gradient(145deg,#166534,#14532d)}
+  .p2{background:linear-gradient(145deg,#1e3a8a,#172554)}
+  .p3{background:linear-gradient(145deg,#9a3412,#7c2d12)}
+  .p4{background:linear-gradient(145deg,#0f766e,#134e4a)}
+  .p5{background:linear-gradient(145deg,#6b21a8,#3b0764)}
+  .p6{background:linear-gradient(145deg,#334155,#1e293b)}
+  .appempty{grid-column:1/-1;color:#64748b;text-align:center;padding:48px 16px;line-height:1.7}
+  .mask{position:absolute;inset:0;background:rgba(2,6,23,.55);display:flex;align-items:center;justify-content:center}
+  .dlg{width:min(520px,92%);background:#f8fafc;color:#0f172a;border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.35);overflow:hidden}
+  .dlg .hd{background:#fff;border-bottom:1px solid #e2e8f0;padding:10px 14px;font-weight:800;font-size:13px}
+  .dlg .bd{padding:12px 14px;font-size:13px}
+  .dlg .ft{display:flex;justify-content:flex-end;gap:8px;padding:10px 14px;background:#f1f5f9}
+  .dlg .ft b,.dlg .ft em{font-style:normal;font-weight:700;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer}
+  .dlg .ft b{background:#2563eb;color:#fff}
+  .dlg .ft em{background:#fff;border:1px solid #cbd5e1}
+  .tree{border:1px solid #e2e8f0;border-radius:8px;background:#fff;padding:8px;height:160px;overflow:auto;font-size:13px}
+  .tree div{padding:3px 6px;border-radius:4px}
+  .tree .cur{background:#dbeafe}
+  .drop{position:absolute;inset:12px;border:2px dashed #60a5fa;border-radius:12px;background:rgba(37,99,235,.18);display:flex;align-items:center;justify-content:center;color:#bfdbfe;font-weight:800}
+  .lb{display:grid;grid-template-columns:1fr 260px;min-height:480px}
+  .lb .pic{background:#020617;display:flex;align-items:center;justify-content:center}
+  .lb .pic .big{width:70%;aspect-ratio:4/3;border-radius:8px;background:linear-gradient(145deg,#166534,#14532d)}
+  .lb .info{background:#1a1d26;padding:14px;border-left:1px solid #2a2f3c;color:#e2e8f0}
+  .chip{display:inline-flex;gap:6px;align-items:center;background:#2a3348;border-radius:999px;padding:3px 9px;margin:0 6px 6px 0;font-size:12px;cursor:pointer}
+  .chip .x{color:#94a3b8;font-weight:800}
+  .chip.man{background:#14532d;color:#bbf7d0}
+  .chip.sys{background:#1e293b;color:#94a3b8;cursor:default}
+  .chip.auto{background:#1e3a5f;color:#bfdbfe}
+  .applist{padding:12px;color:#e2e8f0}
+  .approw{display:flex;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #2a2f3c}
+  .approw[data-go]{cursor:pointer}
+  .appset{padding:18px;max-width:560px;color:#e2e8f0}
+  .appset label{display:block;color:#94a3b8;font-size:12px;margin:12px 0 4px}
+  .appset input,.appset select{width:100%;background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:8px;padding:8px}
+  .prog{height:8px;background:#1e293b;border-radius:99px;overflow:hidden;margin:8px 12px}
+  .prog i{display:block;height:100%;width:62%;background:#3b82f6}
+  .sel{outline:2px solid #3b82f6;outline-offset:1px}
+  .vtbl{width:100%;border-collapse:collapse;font-size:12px}
+  .vtbl th{text-align:left;color:#64748b;font-weight:700;padding:8px 10px;border-bottom:1px solid #2a2f3c}
+  .vtbl td{padding:8px 10px;border-bottom:1px solid #2a2f3c;color:#e2e8f0}
+  .vtbl tr.clk{cursor:pointer}
+  .vtbl tr.clk:hover{background:#1e293b}
+  .badge{font-size:10px;background:#1e3a5f;color:#93c5fd;border-radius:4px;padding:1px 6px;margin-left:6px}
+  .badge.off{background:#3f1d1d;color:#fca5a5}
+  .badge.me{background:#14532d;color:#86efac}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="eyebrow">方案 · 仅电脑端</span>
+  <h1>手机里的图，在电脑上按标签找</h1>
+  <p class="sub" style="margin-top:-8px"><a href="./本地图库-原型.html">打开可运行原型</a>（能跳转、能弹系统选文件框，不接真实分类）</p>
+  <p class="sub">产品不是「再写一个分类脚本」，是一台电脑上的<strong>本地图库软件</strong>：拷进来、自动建议标签、人手纠正、按标签筛、按筛选导出。先给自己清相册，同一套内核以后卖给工作室和学校档案室。</p>
+  <div class="facts">
+    <span class="fact ok">电脑端</span>
+    <span class="fact ok">图不出网（主路径）</span>
+    <span class="fact ok">原图不搬家</span>
+    <span class="fact no">不做手机 App</span>
+    <span class="fact no">不训自有大模型</span>
+    <span class="fact no">不上公有云相册</span>
+  </div>
+  <nav class="toc">
+    <a href="#why">为何电脑</a>
+    <a href="#flow">怎么用</a>
+    <a href="#import">图片导入</a>
+    <a href="#model">模型内容</a>
+    <a href="#store">数据保存</a>
+    <a href="#ui">界面长什么样</a>
+    <a href="#ops">全部操作界面</a>
+    <a href="#tags">标签怎么筛</a>
+    <a href="#arch">技术怎么铺</a>
+    <a href="#scope">做什么 / 不做什么</a>
+    <a href="#sell">怎么卖</a>
+  </nav>
+
+  <section class="stage" id="why">
+    <h2>1. 为何只做电脑端</h2>
+    <p class="hint">手机负责拍，电脑负责管。这是 Google 相册 / Immich / Eagle 能卖的形态，也是能维护的形态。</p>
+    <div class="cols">
+      <div class="card">
+        <i>不选</i>
+        <b>iPhone 上跑脚本</b>
+        <span>没越狱做不了。上架要证书和审核，个人相册工具不值这个成本。</span>
+      </div>
+      <div class="card">
+        <i>不选</i>
+        <b>安卓上跑模型</b>
+        <span>机型碎、耗电、升级痛苦。几万张图在手机上过夜推理，售后会炸。</span>
+      </div>
+      <div class="card">
+        <i>拍板</i>
+        <b>电脑吃备份目录</b>
+        <span>USB / 互传 / 爱思导出到一个文件夹。电脑日处理几千张，还能装进工作室的那台机器。</span>
+      </div>
+    </div>
+    <div class="callout ok">商业含义：交付物是「装在 Windows 上的本地软件」，不是「请在手机里开调试模式跑命令」。采购方听得懂，也过得了数据不出域。</div>
+  </section>
+
+  <section class="stage" id="flow">
+    <h2>2. 使用流程</h2>
+    <p class="hint">人只做两件事：把图拷过来，纠正明显错的标。其余后台做。</p>
+    <div class="flow">
+      <div class="step on">
+        <i>01</i>
+        <b>手机导出</b>
+        <span>线缆 / 互传 / 爱思，拷到电脑某个盘</span>
+      </div>
+      <div class="arr">→</div>
+      <div class="step">
+        <i>02</i>
+        <b>指定目录导入</b>
+        <span>扫描增量，hash 去重，原图不动</span>
+      </div>
+      <div class="arr">→</div>
+      <div class="step">
+        <i>03</i>
+        <b>自动建议标签</b>
+        <span>时间 / 来源规则 + 本地 CLIP 词表</span>
+      </div>
+      <div class="arr">→</div>
+      <div class="step">
+        <i>04</i>
+        <b>查看器筛选</b>
+        <span>点标签收窄，灯箱里改标</span>
+      </div>
+      <div class="arr">→</div>
+      <div class="step">
+        <i>05</i>
+        <b>导出精选</b>
+        <span>当前筛选复制到文件夹，交给别人</span>
+      </div>
+    </div>
+    <table>
+      <tr><th>角色</th><th>干什么</th><th>不干什么</th></tr>
+      <tr><td>你</td><td>拷目录、看「待确认」、叉掉错标、导出</td><td>不给每张图从零打标</td></tr>
+      <tr><td>软件</td><td>索引、缩略图、规则标、内容建议、筛选</td><td>不删手机原图、不默认上传云</td></tr>
+    </table>
+  </section>
+
+  <section class="stage" id="import">
+    <h2>3. 图片导入（电脑怎么把图吃进来）</h2>
+    <p class="hint">导入方式必须多样，但<strong>默认只要一下</strong>：点「导入」→ 弹出系统资源管理器 → 选文件夹或一批文件。不要让人先填路径。后面的管道（哈希 / EXIF / 缩略图 / 入队）都一样。</p>
+    <div class="cols" style="margin-bottom:14px">
+      <div class="card" style="border-color:#2563eb;background:#eff6ff">
+        <i>默认 · 最简单</i>
+        <b>点按钮，弹出资源管理器</b>
+        <span>「导入文件夹」走系统选目录对话框（Windows 文件夹选取器）。「导入图片」多选 jpg/png/heic… 选完立刻入队。这是桌面软件该有的第一入口，路径框只做高级项。</span>
+      </div>
+      <div class="card">
+        <i>同样常用</i>
+        <b>拖进窗口</b>
+        <span>把文件夹或一批图拖到网格空白处松开，等同选中。资源管理器里多选拖过来也算。</span>
+      </div>
+      <div class="card">
+        <i>懒人</i>
+        <b>盯死 inbox</b>
+        <span>手机互传/爱思固定拷到 <code>data/inbox</code>，软件启动或点「扫描收件箱」自动吃增量。适合每周清一次手机。</span>
+      </div>
+    </div>
+    <table style="margin-bottom:14px">
+      <tr><th>#</th><th>导入方式</th><th>人怎么操作</th><th>适合谁</th></tr>
+      <tr><td>1</td><td class="ok">资源管理器选文件夹</td><td>点「导入文件夹」→ 弹出选目录 → 确定</td><td>所有人，第一入口</td></tr>
+      <tr><td>2</td><td class="ok">资源管理器多选文件</td><td>点「导入图片」→ 弹出选文件（可多选）→ 打开</td><td>只想进这几十张</td></tr>
+      <tr><td>3</td><td>拖拽</td><td>从资源管理器拖文件夹/文件到窗口</td><td>已经打开了那个目录</td></tr>
+      <tr><td>4</td><td>扫描收件箱</td><td>约定拷到 inbox 后点一下或开机扫</td><td>固定备份习惯</td></tr>
+      <tr><td>5</td><td>粘贴路径（高级）</td><td>上栏贴 <code>D:\手机备份\DCIM</code></td><td>运维、重复导入同一盘</td></tr>
+      <tr><td>6</td><td>安卓 adb 拉取</td><td>菜单「从手机拉取」调 adb pull 到 inbox 再导入</td><td>开了调试的安卓，可选</td></tr>
+      <tr><td>7</td><td>iPhone / 爱思 / 互传</td><td>先导出到电脑某夹，再走 1 或 3</td><td>苹果用户；HEIC 必须能解</td></tr>
+      <tr><td>8</td><td>剪贴板（可后做）</td><td>截图后 Ctrl+V 进库</td><td>随手截图归档</td></tr>
+    </table>
+    <div class="callout ok">商业上：客户打开软件第一眼必须看见「导入文件夹」。只给路径框，会被当成脚本，不是软件。</div>
+    <div class="callout ok">分类不跟着导入偷偷跑完。人点主界面<strong>启动分类</strong>才开 CLIP。设置里可改成「导入后自动开始」。</div>
+    <div class="flow">
+      <div class="step on"><i>1</i><b>人选图</b><span>资源管理器 / 拖拽 / inbox</span></div>
+      <div class="arr">→</div>
+      <div class="step"><i>2</i><b>进 inbox 中转</b><span>incoming，status=pending</span></div>
+      <div class="arr">→</div>
+      <div class="step"><i>3</i><b>哈希 / EXIF / 缩略图</b><span>坏图进 _failed</span></div>
+      <div class="arr">→</div>
+      <div class="step"><i>4</i><b>启动分类</b><span>点「启动分类」跑 CLIP；可设自动</span></div>
+      <div class="arr">→</div>
+      <div class="step"><i>5</i><b>落入固定库</b><span>library/年/月/ 正式文件</span></div>
+    </div>
+    <div class="cols2">
+      <div>
+        <table>
+          <tr><th>来源</th><th>怎么进电脑</th><th>注意</th></tr>
+          <tr><td>安卓</td><td>USB 传文件，或 <code>adb pull DCIM/Camera</code> 到 inbox</td><td>按 hash 增量，重复拉不会翻倍</td></tr>
+          <tr><td>iPhone</td><td>爱思 / 互传 / 系统导入到 inbox\iPhone</td><td><b>HEIC 必须通</b>，否则软件是废的</td></tr>
+          <tr><td>微信/截图</td><td>整目录丢进来</td><td>路径规则先打「微信」「截图」</td></tr>
+          <tr><td>已经在硬盘上的库</td><td>点「导入文件夹」选出该目录</td><td>复制进正库，外面备份不动</td></tr>
+        </table>
+        <div class="callout warn">不监听手机 MTP 盘符。MTP 不稳定，现场会表现为「导入到一半没了」。拷完再扫。</div>
+      </div>
+      <div class="card">
+        <i>导入时立刻落什么</i>
+        <b>能看，再慢慢标</b>
+        <span>API 立刻返回「处理中 N 张」。网格可以先出缩略图。模型跑完，path 切到 <code>library/年/月/</code>，status=ready。</span>
+        <span style="margin-top:8px">从 inbox / 拖入 / 多选文件：处理成功后<strong>移入正库</strong>，中转清空。</span>
+        <span style="margin-top:8px">从「已有相册文件夹」导入：默认<strong>复制进正库</strong>，不搬走用户自己的备份。</span>
+        <span style="margin-top:8px">hash 已在正库：不写第二份文件，只合并标签。坏图进 <code>inbox/_failed</code>。</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage" id="model">
+    <h2>4. 模型内容（谁给图打内容标签）</h2>
+    <p class="hint">三层，不是一个黑盒。规则不要模型；主内容标必须本地；云端只打难例，可关。</p>
+    <table>
+      <tr><th>层</th><th>模型 / 算法</th><th>输入</th><th>输出（写入库）</th><th>何时跑</th></tr>
+      <tr>
+        <td>L0 规则</td>
+        <td>路径 + EXIF，无模型</td>
+        <td>文件路径、拍摄时间、机型</td>
+        <td>系统标：微信 / 截图 / 相机 / 2024 / 2024-08</td>
+        <td>导入当时，必跑</td>
+      </tr>
+      <tr>
+        <td>L1 主模型</td>
+        <td><b>中文 CLIP</b> 零样本<br>首选 <code>OFA-Sys/chinese-clip-vit-base-patch16</code></td>
+        <td>缩略图或压过的原图 + 词表 80 条提示句</td>
+        <td>词表内自动标 + 0～1 置信度 + source=clip</td>
+        <td>导入进队列后，点主界面「启动分类」开跑。设置可开「导入后自动开始」。GPU 更好，CPU 可过夜</td>
+      </tr>
+      <tr>
+        <td>L2 辅模型</td>
+        <td><b>Qwen-VL</b>（百炼，可选）</td>
+        <td>难例图（CLIP 最高分 &lt; 0.22，或人点「细看」）</td>
+        <td>只许从词表勾选的标签 JSON，source=vlm</td>
+        <td>默认关。证件/发票组<b>永不送</b></td>
+      </tr>
+    </table>
+    <div class="cols" style="margin-top:12px">
+      <div class="card">
+        <i>CLIP 怎么贴到词表</i>
+        <b>一张图一个向量，对 80 个提示句打分</b>
+        <span>提示写成「一张在家里拍的室内照片」，不要只写「家」。每组取 Top-N 且过阈值才落库。室内/室外互斥，只留最高分。</span>
+      </div>
+      <div class="card">
+        <i>权重放哪</i>
+        <b>本地目录，离线包交付</b>
+        <span>约 400MB 级。装软件时拷到 <code>models/clip</code>。没网也能打标。这是个人版和内网版都能卖的前提。</span>
+      </div>
+      <div class="card">
+        <i>明确不选</i>
+        <b>三种看起来快、卖不出去的路</b>
+        <span>① 上来微调分类器（没标签会过拟合）② 百度/腾讯看图按张付费（隐私 + 账单）③ 只靠文件名（微信全是 mmexport 时间戳）</span>
+      </div>
+    </div>
+    <div class="callout ok">模型<strong>不改像素</strong>。它只往 <code>photo_tags</code> 写建议。文件从 inbox 移/复制进正库后，正库那份就是资产原件，之后只追加标签，不再重写图片。</div>
+  </section>
+
+  <section class="stage" id="store">
+    <h2>5. 数据保存（图、库、标分别落在哪）</h2>
+    <p class="hint">图库有一个<strong>固定根目录</strong>（安装时选定，可改）。处理完成的图必须进这个根下的 <code>library/</code>，不能继续停在桌面、微信导出夹或 inbox。</p>
+    <div class="cols">
+      <div class="card" style="border-color:#2563eb;background:#eff6ff">
+        <i>正库 · 图的家</i>
+        <b><code>{库根}/library/年/月/</code></b>
+        <span>模型处理完成后，正式原图落在这里。文件名 <code>20260818_a1b2c3d4e5f6_原名.jpg</code>。网格、导出、备份都只认这里。</span>
+      </div>
+      <div class="card">
+        <i>中转 · 不是家</i>
+        <b><code>{库根}/inbox/</code></b>
+        <span><code>_incoming</code> 刚选进来；<code>_failed</code> 坏图。成功入正库后 incoming 里那份删掉或移走，避免两份真相。</span>
+      </div>
+      <div class="card">
+        <i>索引 + 缩略图</i>
+        <b><code>library.db</code> 与 <code>thumbs/</code></b>
+        <span>path 指向正库文件。缩略图按 id。模型权重在 <code>models/</code>。备份这四样就能搬家。</span>
+      </div>
+    </div>
+    <table style="margin-top:12px">
+      <tr><th>阶段</th><th>磁盘位置</th><th>photos.status</th></tr>
+      <tr><td>人选完，尚未处理完</td><td><code>inbox/_incoming/</code></td><td>pending</td></tr>
+      <tr><td>规则+CLIP 完成</td><td><code>library/2026/08/…jpg</code></td><td>ready</td></tr>
+      <tr><td>解码失败</td><td><code>inbox/_failed/</code></td><td>failed</td></tr>
+    </table>
+    <table style="margin-top:12px">
+      <tr><th>表</th><th>存什么</th><th>不存什么</th></tr>
+      <tr>
+        <td><code>photos</code></td>
+        <td>path（正库绝对路径）、file_hash、phash、宽高、bytes、taken_at、imported_at、camera、GPS、source_dir、thumb_path、status</td>
+        <td>不存原图像素、不存 CLIP 768 维向量（第一期）</td>
+      </tr>
+      <tr>
+        <td><code>tags</code></td>
+        <td>词表名、分组、kind=system/vocab/free</td>
+        <td>不按模型自由生成新词（人手 free 除外）</td>
+      </tr>
+      <tr>
+        <td><code>photo_tags</code></td>
+        <td>图↔标、source=exif/clip/vlm/manual、confidence、rejected</td>
+        <td>被叉掉的标保留痕迹，不物理删，方便纠错统计</td>
+      </tr>
+      <tr>
+        <td><code>feedback</code></td>
+        <td>人手 add/remove 的时间线</td>
+        <td>不当训练样本对外上传</td>
+      </tr>
+      <tr>
+        <td><code>jobs</code></td>
+        <td>导入/打标批次：total、done、error</td>
+        <td>不把失败图内容写进日志</td>
+      </tr>
+    </table>
+    <div class="cols2" style="margin-top:12px">
+      <div class="card">
+        <i>备份 / 搬家</i>
+        <b>拷整个库根即可</b>
+        <span>拷 <code>library/</code> + <code>thumbs/</code> + <code>library.db</code> + <code>models/</code>。换电脑改库根路径。ready 的图都在 library 里，不再依赖当初从哪导入。</span>
+      </div>
+      <div class="card">
+        <i>删除权 / 隐私</i>
+        <b>从库删除 = 正库文件 + 索引 + 缩略图</b>
+        <span>用户从「已有相册文件夹」导入时，外面那份备份默认不动。inbox 中转成功后不留第二份。本机只绑 127.0.0.1。</span>
+      </div>
+    </div>
+    <div class="callout ok">卖点：<b>处理完的图有固定地址</b>——都在你这台电脑的库根 <code>library/年/月/</code>。标签在本地库，模型在本地目录。没有「照片上传到我们的服务器」。</div>
+  </section>
+
+  <section class="stage" id="ui">
+    <h2>6. 界面长什么样（电脑窗口）</h2>
+    <p class="hint">小窗示意布局。下面第 6.1 节可以点按钮跳到每一个操作界面。</p>
+    <div class="desk">
+      <div class="bar">
+        <span class="dot" style="background:#f87171"></span>
+        <span class="dot" style="background:#fbbf24"></span>
+        <span class="dot" style="background:#34d399"></span>
+        <span style="color:#94a3b8;font-size:11px;margin-left:8px">本地图库 · 127.0.0.1</span>
+      </div>
+      <div class="win">
+        <div class="side">
+          <div style="font-weight:800;margin-bottom:8px">本地图库</div>
+          <div class="h">智能相册</div>
+          <span class="t on">全部</span>
+          <span class="t">待确认</span>
+          <span class="t">重复</span>
+          <span class="t">可能证件</span>
+          <div class="h">场景</div>
+          <span class="t on">家</span>
+          <span class="t">办公室</span>
+          <span class="t">风景</span>
+          <div class="h">物品</div>
+          <span class="t on">猫</span>
+          <span class="t">菜</span>
+          <span class="t">车</span>
+        </div>
+        <div class="main">
+          <div class="tb"><i style="flex:none;width:86px;background:#3b82f6;color:#fff;display:grid;place-items:center;font-size:10px;font-weight:800;font-style:normal">导入文件夹</i><i></i><i style="flex:.6"></i></div>
+          <div class="grid">
+            <div class="ph a"></div><div class="ph b"></div><div class="ph"></div><div class="ph c"></div>
+            <div class="ph b"></div><div class="ph"></div><div class="ph a"></div><div class="ph"></div>
+            <div class="ph c"></div><div class="ph"></div><div class="ph b"></div><div class="ph a"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cols" style="margin-top:14px">
+      <div class="card"><i>左栏</i><b>标签树 + 智能相册</b><span>点「猫」+「家」默认 AND，立刻只剩家里的猫。</span></div>
+      <div class="card"><i>中间</i><b>虚拟滚动网格</b><span>只渲染看得见的缩略图。一万张也不能卡。</span></div>
+      <div class="card"><i>灯箱</i><b>大图 + 改标</b><span>叉掉自动标、加上人手标。人手优先，记一条反馈。</span></div>
+    </div>
+  </section>
+
+  <section class="stage" id="ops">
+    <h2>6.1 全部操作界面（点按钮跳转）</h2>
+    <p class="hint" id="opcap">点下面任意操作，窗口切换到对应静态界面。无后端。</p>
+    <div class="opsbar" id="opsbar">
+      <button class="on" data-v="empty">空库</button>
+      <button data-v="home">主界面</button>
+      <button data-v="search">搜索</button>
+      <button data-v="search-hit">搜索结果</button>
+      <button data-v="imp-folder">导入文件夹</button>
+      <button data-v="imp-files">导入图片</button>
+      <button data-v="drop">拖拽</button>
+      <button data-v="inbox">扫描收件箱</button>
+      <button data-v="path">粘贴路径</button>
+      <button data-v="adb">从手机拉取</button>
+      <button data-v="classify">启动分类</button>
+      <button data-v="cls-set">分类设置</button>
+      <button data-v="vocab">词表编辑</button>
+      <button data-v="vocab-edit">编辑词条</button>
+      <button data-v="pending">处理中</button>
+      <button data-v="ready">入正库</button>
+      <button data-v="failed">失败</button>
+      <button data-v="filter">AND 筛选</button>
+      <button data-v="review">待确认</button>
+      <button data-v="dup">重复</button>
+      <button data-v="docs">证件</button>
+      <button data-v="light">人手改词条</button>
+      <button data-v="tag-pick">从词表添加</button>
+      <button data-v="batch-tag">批量改词条</button>
+      <button data-v="export">导出</button>
+      <button data-v="del">删除</button>
+      <button data-v="set">设置库根</button>
+    </div>
+
+    <div class="view on" id="v-empty">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div><div class="appt on">全部 <span>0</span></div></aside>
+          <section class="appmain">
+            <div class="appbar">
+              <input class="q" data-go="search" placeholder="搜索标签…">
+              <span class="abtn p" data-go="imp-folder">导入文件夹</span>
+              <span class="abtn" data-go="imp-files">导入图片</span>
+              <span class="abtn" data-go="classify">启动分类</span>
+              <span class="ahint">正库 0 张 · 待分类 0</span>
+            </div>
+            <div class="appgrid"><div class="appempty">还没有图。点「导入文件夹」选目录；图进来后再点「启动分类」。</div></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-home">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside">
+            <div class="appbrand">本地图库</div>
+            <div class="apph">智能相册</div>
+            <div class="appt on">全部 <span>1284</span></div>
+            <div class="appt">待确认 <span>36</span></div>
+            <div class="appt">重复 <span>8</span></div>
+            <div class="apph">时间</div>
+            <div class="appt" data-go="search-hit">2024</div>
+            <div class="appt" data-go="search-hit">2024-08</div>
+            <div class="apph">物品</div>
+            <div class="appt" data-go="search-hit">猫 <span>41</span></div>
+          </aside>
+          <section class="appmain">
+            <div class="appbar">
+              <input class="q" data-go="search" value="" placeholder="搜索标签：猫、家、微信…">
+              <span class="abtn p" data-go="search">搜索</span>
+              <span class="abtn p" data-go="imp-folder">导入文件夹</span>
+              <span class="abtn" data-go="classify">启动分类</span>
+              <span class="abtn" data-go="batch-tag">批量改词条</span>
+              <span class="abtn" data-go="export">导出</span>
+            </div>
+            <div class="appgrid">
+              <div class="ph p1" data-go="light"><i>猫 · 家</i></div><div class="ph p2" data-go="light"><i>2024-08</i></div><div class="ph p3" data-go="light"><i>微信</i></div><div class="ph p4 sel" data-go="batch-tag"><i>已选</i></div><div class="ph p5" data-go="light"><i>截图</i></div>
+              <div class="ph p6" data-go="light"><i>待确认</i></div><div class="ph p1" data-go="light"><i>猫</i></div><div class="ph p3" data-go="light"><i>发票</i></div><div class="ph p4" data-go="light"><i>夜景</i></div><div class="ph p2" data-go="light"><i>吃饭</i></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-search">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库 · 搜索</div>
+        <div class="appshell">
+          <aside class="appside">
+            <div class="appbrand">本地图库</div>
+            <div class="apph">建议词</div>
+            <div class="appt" data-go="search-hit">猫 <span>41</span></div>
+            <div class="appt" data-go="search-hit">家 <span>128</span></div>
+            <div class="appt" data-go="filter">微信 <span>306</span></div>
+            <div class="appt" data-go="docs">发票 <span>9</span></div>
+            <div class="apph">日期快捷</div>
+            <div class="appt" data-go="search-hit">最近 30 天</div>
+            <div class="appt" data-go="search-hit">2024</div>
+            <div class="appt on" data-go="search-hit">2024-08</div>
+            <div class="appt" data-go="search-hit">今年</div>
+          </aside>
+          <section class="appmain">
+            <div class="appbar">
+              <input class="q" value="猫 家">
+              <span class="abtn p" data-go="search-hit">搜索</span>
+              <span class="abtn">AND</span>
+              <span class="abtn">OR</span>
+            </div>
+            <div class="daterow">
+              拍摄日期
+              <input class="qd" type="date" value="2024-08-01">
+              <span>至</span>
+              <input class="qd" type="date" value="2024-08-31">
+              <span class="abtn">本月</span>
+              <span class="abtn">今年</span>
+              <span class="abtn">不限日期</span>
+            </div>
+            <div class="applist">
+              <div class="approw" data-go="search-hit"><span>猫 + 家 + 2024-08</span><span>6 张 · 标签且日期</span></div>
+              <div class="approw" data-go="search-hit"><span>猫 + 家（不限日期）</span><span>18 张</span></div>
+              <div class="approw" data-go="search-hit"><span>仅日期 2024-08</span><span>142 张</span></div>
+              <div class="approw"><span>无拍摄时间</span><span>走文件修改日，可在结果里看</span></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-search-hit">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库 · 搜索结果</div>
+        <div class="appshell">
+          <aside class="appside">
+            <div class="appbrand">本地图库</div>
+            <div class="apph">当前条件</div>
+            <div class="appt on">猫 <span>×</span></div>
+            <div class="appt on">家 <span>×</span></div>
+            <div class="appt on">2024-08-01 ~ 31 <span>×</span></div>
+            <div class="apph">日期快捷</div>
+            <div class="appt">最近 30 天</div>
+            <div class="appt">今年</div>
+            <div class="apph">还可加</div>
+            <div class="appt" data-go="filter">夜景</div>
+            <div class="appt">微信</div>
+          </aside>
+          <section class="appmain">
+            <div class="appbar">
+              <input class="q" value="猫 家">
+              <span class="abtn p">6 张</span>
+              <span class="abtn" data-go="batch-tag">批量改词条</span>
+              <span class="abtn" data-go="export">导出这 6 张</span>
+            </div>
+            <div class="daterow">
+              拍摄日期
+              <input class="qd" type="date" value="2024-08-01">
+              <span>至</span>
+              <input class="qd" type="date" value="2024-08-31">
+              <span style="margin-left:auto">优先 EXIF 拍摄日，没有则用文件时间</span>
+            </div>
+            <div class="appgrid">
+              <div class="ph p1" data-go="light"><i>2024-08-03 · 猫 · 家</i></div>
+              <div class="ph p1" data-go="light"><i>2024-08-12 · 猫 · 家</i></div>
+              <div class="ph p1" data-go="light"><i>2024-08-19 · 猫 · 家</i></div>
+              <div class="ph p1" data-go="light"><i>2024-08-28 · 猫 · 家</i></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-imp-folder">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div></aside>
+          <section class="appmain"><div class="appbar"><span class="abtn p">导入文件夹</span></div><div class="appgrid"></div></section>
+        </div>
+        <div class="mask"><div class="dlg">
+          <div class="hd">选择要导入的文件夹</div>
+          <div class="bd"><div class="tree"><div>磁盘 (D:)</div><div>　手机备份</div><div class="cur">　　DCIM</div></div>
+            <p style="margin-top:8px;color:#64748b;font-size:12px">确定后复制进 D:\PhotoLib\library\年\月\</p></div>
+          <div class="ft"><em>取消</em><b>选择文件夹</b></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="view" id="v-imp-files">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell"><aside class="appside"><div class="appbrand">本地图库</div></aside>
+          <section class="appmain"><div class="appbar"><span class="abtn p">导入图片</span></div><div class="appgrid"></div></section></div>
+        <div class="mask"><div class="dlg">
+          <div class="hd">打开 · 导入图片</div>
+          <div class="bd"><div class="tree"><div class="cur">IMG_0001.HEIC</div><div class="cur">mmexport.jpg</div></div>
+            <p style="margin-top:8px;color:#64748b;font-size:12px">已选 2 个 · 处理完移入正库</p></div>
+          <div class="ft"><em>取消</em><b>打开</b></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="view" id="v-drop">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div></aside>
+          <section class="appmain">
+            <div class="appbar"><span class="abtn p">导入文件夹</span></div>
+            <div class="appgrid" style="position:relative"><div class="ph p1"></div><div class="ph p2"></div><div class="drop">松开以导入文件夹 / 图片</div></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-inbox">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div></aside>
+          <section class="appmain">
+            <div class="appbar"><span class="abtn p" data-go="inbox">扫描收件箱</span><span class="abtn" data-go="classify">启动分类</span></div>
+            <div class="applist">
+              <div class="approw"><span>D:\PhotoLib\inbox</span><span>发现 86 张</span></div>
+              <div class="approw"><span>完成后移入</span><span>library\2026\08\</span></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-path">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div></aside>
+          <section class="appmain">
+            <div class="appbar">
+              <input style="flex:1;background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:8px;padding:7px" value="D:\手机备份\DCIM">
+              <span class="abtn p">导入此路径</span>
+            </div>
+            <div class="appempty">高级项。普通人请用「导入文件夹」。</div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-adb">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div></aside>
+          <section class="appmain">
+            <div class="appbar"><span class="abtn p">从手机拉取</span></div>
+            <div class="applist">
+              <div class="approw"><span>安卓 adb</span><span>DCIM → inbox → 正库</span></div>
+              <div class="approw"><span>iPhone</span><span>先爱思/互传，再导入文件夹</span></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-classify">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside">
+            <div class="appbrand">本地图库</div>
+            <div class="appt">全部 <span>1284</span></div>
+            <div class="appt on">未分类 <span>86</span></div>
+            <div class="appt">失败可重试 <span>2</span></div>
+          </aside>
+          <section class="appmain">
+            <div class="appbar"><span class="abtn p">启动分类</span><span class="abtn" data-go="cls-set">分类设置</span><span class="ahint">CLIP 本地 · 图不出网</span></div>
+            <div class="applist">
+              <div class="approw"><span>待跑 CLIP</span><span>86 张</span></div>
+              <div class="approw"><span>L0 规则</span><span>导入时已跑完</span></div>
+              <div class="approw"><span>预计</span><span>GPU 约 4 分钟 / CPU 过夜</span></div>
+            </div>
+          </section>
+        </div>
+        <div class="mask"><div class="dlg">
+          <div class="hd">启动分类</div>
+          <div class="bd">
+            <p>将对 <b>86</b> 张未分类图跑本地中文 CLIP，写入词表标签。原图不改像素，分类完移入 <code>library/年/月/</code>。</p>
+            <p style="margin-top:10px;font-size:12px;color:#334155">
+              ☑ 只处理未分类（默认）<br>
+              ☐ 把「待确认」一起重跑<br>
+              ☐ 打开难例 VL（默认关，证件/发票永不送）
+            </p>
+          </div>
+          <div class="ft"><em data-go="cls-set">分类设置</em><em>取消</em><b data-go="pending">开始识别</b></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="view" id="v-cls-set">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库 · 分类设置</div>
+        <div class="appshell">
+          <aside class="appside">
+            <div class="appbrand">本地图库</div>
+            <div class="apph">设置</div>
+            <div class="appt" data-go="set">库根</div>
+            <div class="appt on">分类</div>
+            <div class="appt" data-go="vocab">词表</div>
+          </aside>
+          <section class="appmain">
+            <div class="appset">
+              <label>导入后是否自动分类</label>
+              <select><option selected>关（默认：人点「启动分类」）</option><option>开（导入完立刻跑 CLIP）</option></select>
+              <label>主模型</label>
+              <input value="models/clip · OFA-Sys/chinese-clip-vit-base-patch16">
+              <label>落标阈值（低于此进待确认）</label>
+              <input value="0.22">
+              <label>每组最多落下几个标签</label>
+              <select><option>3</option><option>2</option><option>1</option></select>
+              <label>推理设备</label>
+              <select><option>自动（有 GPU 用 GPU）</option><option>仅 GPU</option><option>仅 CPU（过夜）</option></select>
+              <label>难例 VL（Qwen-VL / 百炼）</label>
+              <select><option selected>关（个人版默认，无按张账单）</option><option>开（仅 CLIP&lt;0.22 的难例）</option></select>
+              <label>证件 / 发票送云</label>
+              <input value="永不送（锁死，不可开）" readonly>
+              <label>词表文件</label>
+              <input value="D:\PhotoLib\tags.json">
+              <div style="margin-top:12px"><span class="abtn p">保存</span><span class="abtn" data-go="vocab">打开词表编辑</span><span class="abtn" data-go="classify">去启动分类</span></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-vocab">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库 · 词表编辑</div>
+        <div class="appshell">
+          <aside class="appside">
+            <div class="appbrand">本地图库</div>
+            <div class="apph">设置</div>
+            <div class="appt" data-go="set">库根</div>
+            <div class="appt" data-go="cls-set">分类</div>
+            <div class="appt on">词表</div>
+            <div class="apph">分组</div>
+            <div class="appt on">场景 <span>11</span></div>
+            <div class="appt">物品 <span>10</span></div>
+            <div class="appt">文档 <span>5</span></div>
+            <div class="appt">人 <span>6</span></div>
+            <div class="appt">活动 <span>7</span></div>
+            <div class="appt">来源 <span>7</span></div>
+            <div class="appt">用途 <span>6</span></div>
+          </aside>
+          <section class="appmain">
+            <div class="appbar">
+              <span class="abtn p" data-go="vocab-edit">新增词条</span>
+              <span class="abtn" data-go="classify">按新词表重跑</span>
+              <span class="ahint">内置 80 · 自定义 2 · 改完不自动改已落标</span>
+            </div>
+            <table class="vtbl">
+              <tr><th>中文名</th><th>CLIP 提示句</th><th>互斥</th><th>已用</th><th>状态</th></tr>
+              <tr class="clk" data-go="vocab-edit"><td>家</td><td>一张在家里拍的室内照片</td><td>场景-场所</td><td>128</td><td>启用<span class="badge">内置</span></td></tr>
+              <tr class="clk" data-go="vocab-edit"><td>室内</td><td>一张室内环境的照片</td><td>室内外</td><td>410</td><td>启用<span class="badge">内置</span></td></tr>
+              <tr class="clk" data-go="vocab-edit"><td>室外</td><td>一张户外环境的照片</td><td>室内外</td><td>206</td><td>启用<span class="badge">内置</span></td></tr>
+              <tr class="clk" data-go="vocab-edit"><td>夜景</td><td>一张夜晚拍摄的照片</td><td>—</td><td>33</td><td>启用<span class="badge">内置</span></td></tr>
+              <tr class="clk" data-go="vocab-edit"><td>医院</td><td>一张在医院拍摄的照片</td><td>场景-场所</td><td>4</td><td>停用<span class="badge off">内置</span></td></tr>
+              <tr class="clk" data-go="vocab-edit"><td>装修前</td><td>（人手词，模型不打）</td><td>—</td><td>12</td><td>启用<span class="badge me">自定义</span></td></tr>
+            </table>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-vocab-edit">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库 · 编辑词条</div>
+        <div class="appshell">
+          <aside class="appside">
+            <div class="appbrand">本地图库</div>
+            <div class="appt" data-go="vocab">← 词表</div>
+          </aside>
+          <section class="appmain">
+            <div class="appbar"><span class="ahint" style="margin:0">内置词可停用，有引用不能删</span></div>
+            <div class="appset">
+              <label>中文名（筛选用这个）</label><input value="家">
+              <label>分组</label>
+              <select><option selected>场景</option><option>物品</option><option>文档</option><option>人</option><option>活动</option><option>来源</option><option>用途</option></select>
+              <label>CLIP 提示句（不要只写一个词）</label><input value="一张在家里拍的室内照片">
+              <label>互斥组（同组只留最高分）</label>
+              <select><option>无</option><option selected>场景-场所</option><option>室内外</option></select>
+              <label>谁可以写这个标</label>
+              <select><option selected>模型可打 + 人手可改</option><option>仅人手（用途类）</option><option>仅规则（来源类）</option></select>
+              <label>证件/发票级：禁止送云</label>
+              <select><option selected>否</option><option>是（锁死不送 VL）</option></select>
+              <label>状态</label>
+              <select><option selected>启用</option><option>停用（已有图保留旧标，新图不再打）</option></select>
+              <p style="color:#94a3b8;font-size:12px;margin-top:10px">已用于 128 张。删除按钮灰掉。保存只改词表，已落库的自动标要「按新词表重跑」才更新。</p>
+              <div style="margin-top:12px"><span class="abtn p" data-go="vocab">保存</span><span class="abtn d">删除（已有引用）</span></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-pending">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div></aside>
+          <section class="appmain">
+            <div class="appbar"><span class="ahint" style="margin:0">启动分类后 · 处理中 53/86 · CLIP 62%</span><span class="abtn">暂停</span></div>
+            <div class="prog"><i></i></div>
+            <div class="applist"><div class="approw"><span>完成后</span><span>移入 library/2026/08/</span></div></div>
+            <div class="appgrid"><div class="ph p6"><i>处理中</i></div><div class="ph p1"><i>已入正库</i></div></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-ready">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div><div class="appt on">全部 <span>1370</span></div></aside>
+          <section class="appmain">
+            <div class="appbar"><span class="ahint" style="margin:0">已入 D:\PhotoLib\library\2026\08\ · 点图可改词条</span></div>
+            <div class="appgrid">
+              <div class="ph p1" data-go="light"><i>20260818_a1b2_猫.jpg</i></div>
+              <div class="ph p2" data-go="light"><i>20260818_c3d4_风景.jpg</i></div>
+              <div class="ph p3" data-go="light"><i>20260817_微信.jpg</i></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-failed">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div></aside>
+          <section class="appmain">
+            <div class="appbar"><span class="ahint" style="margin:0">inbox/_failed · 不进正库</span></div>
+            <div class="applist">
+              <div class="approw"><span>0byte.jpg</span><span>0 字节</span></div>
+              <div class="approw"><span>corrupt.heic</span><span>解码失败</span></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-filter">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div><div class="appt on">家</div><div class="appt on">猫</div></aside>
+          <section class="appmain">
+            <div class="appbar"><span class="abtn p">同时满足</span><span class="abtn" data-go="batch-tag">批量改词条</span><span class="ahint">18 张</span></div>
+            <div class="appgrid"><div class="ph p1" data-go="light"><i>猫 · 家</i></div><div class="ph p1" data-go="light"><i>猫 · 家</i></div><div class="ph p1" data-go="light"><i>猫 · 家</i></div></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-review">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div><div class="appt on">待确认 <span>36</span></div></aside>
+          <section class="appmain">
+            <div class="appbar"><span class="abtn p" data-go="light">打开改词条</span><span class="ahint">低置信 / 无人手标</span></div>
+            <div class="appgrid"><div class="ph p6" data-go="light"><i>0.18</i></div><div class="ph p6" data-go="light"><i>无人手标</i></div></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-dup">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div><div class="appt on">重复</div></aside>
+          <section class="appmain">
+            <div class="appgrid"><div class="ph p2 sel"><i>正库件</i></div><div class="ph p2"><i>相似 96%</i></div></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-docs">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div><div class="appt on">可能证件</div></aside>
+          <section class="appmain">
+            <div class="appbar"><span class="ahint" style="margin:0">不送云端 VLM</span></div>
+            <div class="appgrid"><div class="ph p3"><i>发票</i></div><div class="ph p6"><i>证件</i></div></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-light">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库 · 人手改词条</div>
+        <div class="lb">
+          <div class="pic"><div class="big"></div></div>
+          <aside class="info">
+            <p style="font-weight:800">2026-08-18 19:02</p>
+            <p style="color:#64748b;font-size:11px;word-break:break-all;margin:6px 0">D:\PhotoLib\library\2026\08\20260818_a1b2_IMG.jpg</p>
+            <p class="apph" style="margin:12px 0 6px">自动（CLIP，点 × 驳回）</p>
+            <span class="chip auto">猫 0.81 <span class="x">×</span></span>
+            <span class="chip auto">家 0.74 <span class="x">×</span></span>
+            <span class="chip auto">夜景 0.19 <span class="x">×</span></span>
+            <p class="apph" style="margin:12px 0 6px">系统（规则，不能删）</p>
+            <span class="chip sys">2026-08</span>
+            <span class="chip sys">微信</span>
+            <p class="apph" style="margin:12px 0 6px">人手（最高优先）</p>
+            <span class="chip man">给爸 <span class="x">×</span></span>
+            <span class="chip man">可发 <span class="x">×</span></span>
+            <div class="appbar" style="border:0;padding:12px 0;flex-wrap:wrap">
+              <span class="abtn p" data-go="tag-pick">从词表添加</span>
+              <span class="abtn" data-go="vocab-edit">新建自定义词</span>
+              <span class="abtn d" data-go="del">从库删除</span>
+            </div>
+            <p style="color:#64748b;font-size:11px;line-height:1.6">改完立刻写进本地库。人手标盖过自动标。驳回会记一条反馈，下次同类少打错。</p>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-tag-pick">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库 · 从词表添加</div>
+        <div class="lb">
+          <div class="pic"><div class="big"></div></div>
+          <aside class="info" style="position:relative">
+            <p style="font-weight:800">给这张图加点词条</p>
+            <span class="chip man">给爸</span>
+          </aside>
+        </div>
+        <div class="mask"><div class="dlg">
+          <div class="hd">从词表选择</div>
+          <div class="bd">
+            <input style="width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:8px;margin-bottom:8px" value="搜：猫 / 家 / 给爸">
+            <div class="tree" style="height:180px">
+              <div class="cur">☑ 猫（物品）</div>
+              <div>☑ 家（场景）</div>
+              <div>☐ 狗</div>
+              <div>☐ 办公室</div>
+              <div>☐ 发票（永不送云）</div>
+              <div>☐ 装修前（自定义）</div>
+            </div>
+            <p style="margin-top:8px;color:#64748b;font-size:12px">勾上的写成人手标。词表里没有的，去「新建自定义词」。</p>
+          </div>
+          <div class="ft"><em data-go="light">取消</em><b data-go="light">添加到这张图</b></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="view" id="v-batch-tag">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库 · 批量改词条</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div><div class="appt on">已选 <span>5</span></div></aside>
+          <section class="appmain">
+            <div class="appbar"><span class="abtn p" data-go="tag-pick">给这 5 张加词条</span><span class="abtn">去掉词条</span><span class="ahint">人手标同时写进 5 张</span></div>
+            <div class="appgrid">
+              <div class="ph p1 sel" data-go="light"><i>已选</i></div>
+              <div class="ph p4 sel" data-go="light"><i>已选</i></div>
+              <div class="ph p2 sel" data-go="light"><i>已选</i></div>
+              <div class="ph p5 sel" data-go="light"><i>已选</i></div>
+              <div class="ph p3 sel" data-go="light"><i>已选</i></div>
+            </div>
+          </section>
+        </div>
+        <div class="mask"><div class="dlg">
+          <div class="hd">给已选 5 张写人手词条</div>
+          <div class="bd">
+            <p>添加：<span class="chip man" style="color:#14532d;background:#dcfce7">给爸</span> <span class="chip man" style="color:#14532d;background:#dcfce7">可发</span></p>
+            <p style="margin-top:8px">去掉自动标：<span class="chip auto" style="color:#1e3a8a;background:#dbeafe">夜景 ×</span></p>
+            <p style="margin-top:10px;color:#64748b;font-size:12px">只改这 5 张的索引，不改词表本身，也不改像素。</p>
+          </div>
+          <div class="ft"><em>取消</em><b>应用到 5 张</b></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="view" id="v-export">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell"><aside class="appside"><div class="appbrand">本地图库</div></aside>
+          <section class="appmain"><div class="appbar"><span class="abtn p">导出</span></div><div class="appgrid"><div class="ph p1"></div></div></section></div>
+        <div class="mask"><div class="dlg">
+          <div class="hd">导出当前 18 张</div>
+          <div class="bd"><div class="tree"><div class="cur">D:\导出\给爸</div></div><p style="margin-top:8px;color:#64748b;font-size:12px">从正库复制，不搬走原件。</p></div>
+          <div class="ft"><em>取消</em><b>导出</b></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="view" id="v-del">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell"><aside class="appside"><div class="appbrand">本地图库</div></aside>
+          <section class="appmain"><div class="appgrid"><div class="ph p1 sel"></div></div></section></div>
+        <div class="mask"><div class="dlg">
+          <div class="hd">从库删除 1 张？</div>
+          <div class="bd">删除正库文件、索引、缩略图。外面备份不动。不删手机。</div>
+          <div class="ft"><em>取消</em><b style="background:#b91c1c">删除</b></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="view" id="v-set">
+      <div class="app">
+        <div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库</div>
+        <div class="appshell">
+          <aside class="appside"><div class="appbrand">本地图库</div><div class="apph">设置</div><div class="appt on">库根</div><div class="appt" data-go="cls-set">分类</div><div class="appt" data-go="vocab">词表</div></aside>
+          <section class="appmain">
+            <div class="appset">
+              <label>库根目录</label><input value="D:\PhotoLib">
+              <label>正库</label><input value="D:\PhotoLib\library\年\月\" readonly>
+              <label>中转</label><input value="D:\PhotoLib\inbox" readonly>
+              <div style="margin-top:12px"><span class="abtn p">保存</span><span class="abtn" data-go="cls-set">分类设置</span></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage" id="tags">
+    <h2>7. 标签：受控词表，才能筛得动</h2>
+    <p class="hint">模型不许自由发明「户外 / 外面 / 室外」三个近义词。词表是产品，模型只是打分器。</p>
+    <table>
+      <tr><th>类型</th><th>谁写</th><th>例子</th></tr>
+      <tr><td>系统</td><td>EXIF / 路径规则</td><td>2024、2024-08、微信、截图、iPhone</td></tr>
+      <tr><td>自动</td><td>本地 CLIP 对词表打分</td><td>猫、家、夜景、发票（带置信度）</td></tr>
+      <tr><td>人手</td><td>你在灯箱里改</td><td>可发、待删、装修前、给爸</td></tr>
+    </table>
+    <div class="callout warn">证件 / 发票默认<strong>不送云端大模型</strong>。低置信进「待确认」，不进默认筛选项，避免噪声污染。</div>
+    <p class="hint" style="margin-top:12px">第一期词表大约 80 个：来源、人、场景、活动、物品、文档、用途。改 <code>tags.json</code> 即可加词，不必改模型。</p>
+  </section>
+
+  <section class="stage" id="arch">
+    <h2>8. 技术怎么铺（电脑本机）</h2>
+    <p class="hint">单独项目，不塞进心理健康引擎仓。主路径离线。云端 VLM 只打难例，可关。</p>
+    <div class="cols2">
+      <div>
+        <table>
+          <tr><th>层</th><th>选型</th><th>为什么</th></tr>
+          <tr><td>查看器</td><td>本机网页窗口（Vue）</td><td>先能用；以后要卖再套安装包</td></tr>
+          <tr><td>服务</td><td>本机 HTTP，只绑 127.0.0.1</td><td>图不对外网暴露</td></tr>
+          <tr><td>索引</td><td>SQLite</td><td>1～3 万张够用，零运维</td></tr>
+          <tr><td>缩略图 / EXIF</td><td>本地解码</td><td>网格不能读原图</td></tr>
+          <tr><td>内容标</td><td>本地 CLIP 零样本</td><td>万张不按张付费</td></tr>
+          <tr><td>难例（可选）</td><td>Qwen-VL，只许勾词表</td><td>证件类默认跳过</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <i>数据原则</i>
+        <b>原图是真相，库只是索引</b>
+        <span>表里存绝对路径 + hash + 缩略图路径。删软件，图还在盘上。可选「导入时复制进库目录」，给 U 盘备份用。</span>
+        <span style="margin-top:8px">纠正记录进 feedback。第一期只调阈值，有数据了再训小分类头。没反馈就不要训练。</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage" id="scope">
+    <h2>9. 范围：能卖的第一期 vs 明确不做</h2>
+    <div class="cols2">
+      <div>
+        <p class="h" style="font-weight:800;margin-bottom:8px">第一期要交得出手</p>
+        <table>
+          <tr><td class="ok">做</td><td>指定目录导入，jpg/png/webp/gif，HEIC 要通（iPhone）</td></tr>
+          <tr><td class="ok">做</td><td>去重、EXIF 时间机型、缩略图</td></tr>
+          <tr><td class="ok">做</td><td>规则标 + CLIP 词表建议 + 人手改</td></tr>
+          <tr><td class="ok">做</td><td>AND/OR 筛选、待确认 / 重复 / 未分类</td></tr>
+          <tr><td class="ok">做</td><td>网格、灯箱、按筛选导出文件夹</td></tr>
+        </table>
+      </div>
+      <div>
+        <p class="h" style="font-weight:800;margin-bottom:8px">第一期不要写进承诺</p>
+        <table>
+          <tr><td class="no">不做</td><td>手机 App、云同步、多端实时</td></tr>
+          <tr><td class="no">不做</td><td>人脸自动实名（最多「脸 A/B」，默认关）</td></tr>
+          <tr><td class="no">不做</td><td>视频逐帧、微表情</td></tr>
+          <tr><td class="no">不做</td><td>上来就微调分类器</td></tr>
+          <tr><td class="no">不做</td><td>软件直接删手机里的重复照片</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="callout ok">验收：1 万张能过夜进完库；打开网格 2 秒出首页；点两三个标签结果可解释；纠错 50 张后同类少改。做不到这四条，就还是 demo。</div>
+  </section>
+
+  <section class="stage" id="sell">
+    <h2>10. 怎么卖：先自用，内核预留三档</h2>
+    <p class="hint">个人相册是狗粮。能收费的是同一套索引 + 词表，换客户包装。</p>
+    <div class="sku">
+      <div class="card rec">
+        <i>现在做</i>
+        <b>个人版</b>
+        <span>单库、本地打标、查看器、导入目录。自己把手机备份清完，词表被骂过一轮再打安装包。</span>
+      </div>
+      <div class="card">
+        <i>同一内核</i>
+        <b>专业版</b>
+        <span>多库、自定义词表、导出工单、可选难例 VLM。卖设计 / 摄影工作室。</span>
+      </div>
+      <div class="card">
+        <i>同一内核</i>
+        <b>内网版</b>
+        <span>离线权重、关掉所有出网。卖学校宣传档案、单位资料室。不碰病历影像。</span>
+      </div>
+    </div>
+    <table style="margin-top:14px">
+      <tr><th>和心理健康引擎的关系</th><td>评测仓是「看人脸做筛查」。这套是「管相册资产」。代码、词表、合规口径都分开，不要接到 4780x 上。</td></tr>
+      <tr><th>成本</th><td>主路径本地推理，没有按张账单。难例 VLM 可关。存储只多 5～15% 缩略图。</td></tr>
+    </table>
+  </section>
+
+  <footer>方案页 · 2026-08-18 · 只设计不实现 · 全部操作界面在本页第 6.1 节点击跳转</footer>
+</div>
+<script>
+(function(){
+  var bar = document.getElementById("opsbar");
+  if (!bar) return;
+  function show(id){
+    var btn = bar.querySelector('[data-v="'+id+'"]');
+    bar.querySelectorAll("button").forEach(function(x){ x.classList.remove("on"); });
+    document.querySelectorAll(".view").forEach(function(x){ x.classList.remove("on"); });
+    if (btn) btn.classList.add("on");
+    var v = document.getElementById("v-" + id);
+    if (v) v.classList.add("on");
+    document.getElementById("opcap").textContent = "当前：" + (btn ? btn.textContent : id);
+    document.getElementById("ops").scrollIntoView({behavior:"smooth", block:"start"});
+  }
+  bar.addEventListener("click", function(e){
+    var b = e.target.closest("button");
+    if (!b) return;
+    show(b.getAttribute("data-v"));
+  });
+  document.getElementById("ops").addEventListener("click", function(e){
+    var go = e.target.closest("[data-go]");
+    if (!go) return;
+    show(go.getAttribute("data-go"));
+  });
+})();
+</script>
+</body>
+</html>

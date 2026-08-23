@@ -1,0 +1,45 @@
+appId: com.local.ai-image-tagger
+productName: AI Image Tagger
+copyright: personal use
+
+directories:
+  output: release
+  buildResources: build
+
+# 后端跑在自带 node.exe（Node ABI），不重建 native 模块
+npmRebuild: false
+
+# 打包后前端 + 后端运行时资源（不打进 asar，便于 node.exe 直接读取）
+extraResources:
+  - from: runtime/node.exe
+    to: node/node.exe
+  - from: runtime/node_modules
+    to: node_modules
+  - from: backend
+    to: backend
+  - from: config
+    to: config
+  - from: web/dist
+    to: web/dist
+
+files:
+  - electron/**/*
+  - "!electron/*.map"
+
+asar: true
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  artifactName: "${productName}-${version}-setup.${ext}"
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  shortcutName: AI Image Tagger
+
+electronLanguages:
+  - zh-CN
+  - en-US

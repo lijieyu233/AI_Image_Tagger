@@ -1,0 +1,28 @@
+{
+  "name": "ai-image-tagger",
+  "version": "0.1.0",
+  "private": true,
+  "description": "本地相册识图分类 · 电脑端（Electron + Node + SQLite + Vue3 + CLIP）",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "backend": "node backend/src/index.js",
+    "build:web": "vite build",
+    "dev:web": "vite",
+    "electron": "electron .",
+    "start": "node backend/src/index.js",
+    "dist": "electron-builder --dir",
+    "dist:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@xenova/transformers": "^2.17.2",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "exifr": "^7.1.3",
+    "heic-decode": "^1.1.2",
+    "sharp": "^0.33.5",
+    "vite": "^6.0.7",
+    "vue": "^3.5.13"
+  }
+}

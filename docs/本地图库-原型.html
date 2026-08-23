@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>本地图库 · 可运行原型</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0b1020;font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:#e2e8f0}
+.app{height:100%;display:flex;flex-direction:column}
+.titlebar{height:36px;background:#070b14;display:flex;align-items:center;gap:8px;padding:0 12px;color:#94a3b8;font-size:12px;border-bottom:1px solid #1e293b}
+.dot{width:8px;height:8px;border-radius:50%}
+.shell{flex:1;display:grid;grid-template-columns:200px 1fr;min-height:0}
+.side{background:#12151e;border-right:1px solid #1e293b;padding:12px 10px;overflow:auto}
+.brand{font-weight:800;font-size:15px;margin:0 6px 6px}
+.hint{color:#64748b;font-size:11px;margin:0 6px 10px;line-height:1.4}
+.h{color:#64748b;font-size:10px;letter-spacing:.08em;margin:12px 6px 4px}
+.t{display:flex;justify-content:space-between;padding:7px 8px;border-radius:8px;margin-bottom:2px;cursor:pointer;font-size:13px}
+.t:hover{background:#1e293b}
+.t.on{background:#243656}
+.t span{color:#94a3b8}
+.main{display:flex;flex-direction:column;min-width:0;background:#0f121a}
+.bar{display:flex;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid #1e293b;flex-wrap:wrap}
+.btn{background:#2a3348;border:0;color:#e2e8f0;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:700;cursor:pointer}
+.btn:hover{filter:brightness(1.08)}
+.btn.p{background:#3b82f6;color:#fff}
+.btn.d{background:#7f1d1d}
+.q{flex:1;min-width:180px;background:#0b1020;border:1px solid #334155;color:#e2e8f0;border-radius:8px;padding:7px 10px}
+.qd{width:132px;background:#0b1020;border:1px solid #334155;color:#e2e8f0;border-radius:8px;padding:7px 8px}
+.dates{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid #1e293b;color:#94a3b8;font-size:12px;flex-wrap:wrap}
+.grid{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;padding:12px;align-content:start}
+.ph{aspect-ratio:1;border-radius:10px;position:relative;cursor:pointer;overflow:hidden}
+.ph i{position:absolute;left:6px;right:6px;bottom:6px;font-style:normal;font-size:11px;color:#fff;text-shadow:0 1px 4px #000}
+.ph.sel{outline:2px solid #3b82f6;outline-offset:2px}
+.empty{grid-column:1/-1;text-align:center;color:#64748b;padding:64px 16px;line-height:1.7}
+.mask{position:fixed;inset:0;background:rgba(2,6,23,.55);display:flex;align-items:center;justify-content:center;z-index:20}
+.dlg{width:min(520px,92%);background:#f8fafc;color:#0f172a;border-radius:12px;overflow:hidden}
+.dlg .hd{padding:12px 14px;font-weight:800;background:#fff;border-bottom:1px solid #e2e8f0}
+.dlg .bd{padding:14px;font-size:13px;line-height:1.6}
+.dlg .ft{display:flex;justify-content:flex-end;gap:8px;padding:10px 14px;background:#f1f5f9}
+.dlg .ft button{border:0;border-radius:6px;padding:7px 12px;font-weight:700;cursor:pointer}
+.dlg .ghost{background:#fff;border:1px solid #cbd5e1}
+.dlg .ok{background:#2563eb;color:#fff}
+.lb{flex:1;display:grid;grid-template-columns:1fr 300px;min-height:0}
+.pic{background:#020617;display:flex;align-items:center;justify-content:center}
+.big{width:72%;aspect-ratio:4/3;border-radius:10px}
+.info{background:#12151e;padding:16px;border-left:1px solid #1e293b;overflow:auto}
+.chip{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:3px 9px;margin:0 6px 6px 0;font-size:12px}
+.chip .x{cursor:pointer;opacity:.7}
+.auto{background:#1e3a5f;color:#bfdbfe}
+.man{background:#14532d;color:#bbf7d0}
+.sys{background:#1e293b;color:#94a3b8}
+.set{padding:18px;max-width:560px}
+.set label{display:block;color:#94a3b8;font-size:12px;margin:12px 0 4px}
+.set input,.set select,.set textarea{width:100%;background:#0b1020;border:1px solid #334155;color:#e2e8f0;border-radius:8px;padding:8px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0f172a;border:1px solid #334155;padding:8px 14px;border-radius:8px;font-size:13px;z-index:40}
+.prog{height:8px;background:#1e293b;border-radius:99px;overflow:hidden;margin:12px}
+.prog i{display:block;height:100%;background:#3b82f6;width:0;transition:width .2s}
+.list{padding:8px 12px}
+.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1e293b;font-size:13px}
+.vtbl{width:100%;border-collapse:collapse;font-size:12px}
+.vtbl th,.vtbl td{padding:8px 10px;border-bottom:1px solid #1e293b;text-align:left}
+.vtbl th{color:#64748b}
+.vtbl tr{cursor:pointer}
+.vtbl tr:hover{background:#1e293b}
+.banner{background:#1e3a8a;color:#dbeafe;font-size:12px;padding:6px 12px;text-align:center}
+a.plain{color:#93c5fd;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<input id="pickFiles" type="file" accept="image/*" multiple hidden>
+<input id="pickFolder" type="file" webkitdirectory multiple hidden>
+<script>
+(function(){
+  var VOCAB = [
+    {id:"cat", name:"猫", group:"物品", prompt:"一张有猫的照片", mutex:"", kind:"auto"},
+    {id:"home", name:"家", group:"场景", prompt:"一张在家里拍的室内照片", mutex:"place", kind:"auto"},
+    {id:"indoor", name:"室内", group:"场景", prompt:"一张室内环境的照片", mutex:"io", kind:"auto"},
+    {id:"outdoor", name:"室外", group:"场景", prompt:"一张户外环境的照片", mutex:"io", kind:"auto"},
+    {id:"night", name:"夜景", group:"场景", prompt:"一张夜晚拍摄的照片", mutex:"", kind:"auto"},
+    {id:"wx", name:"微信", group:"来源", prompt:"", mutex:"", kind:"sys"},
+    {id:"shot", name:"截图", group:"来源", prompt:"", mutex:"", kind:"sys"},
+    {id:"food", name:"吃饭", group:"活动", prompt:"一张吃饭场景的照片", mutex:"", kind:"auto"},
+    {id:"inv", name:"发票", group:"文档", prompt:"一张发票或收据", mutex:"", kind:"auto"},
+    {id:"id", name:"证件", group:"文档", prompt:"一张证件照片", mutex:"", kind:"auto"},
+    {id:"dad", name:"给爸", group:"用途", prompt:"", mutex:"", kind:"manual"},
+    {id:"post", name:"可发", group:"用途", prompt:"", mutex:"", kind:"manual"}
+  ];
+  var COLORS = [
+    "linear-gradient(145deg,#166534,#14532d)",
+    "linear-gradient(145deg,#1e3a8a,#172554)",
+    "linear-gradient(145deg,#9a3412,#7c2d12)",
+    "linear-gradient(145deg,#0f766e,#134e4a)",
+    "linear-gradient(145deg,#6b21a8,#3b0764)",
+    "linear-gradient(145deg,#334155,#1e293b)"
+  ];
+  var S = {
+    view: "home",
+    dialog: null,
+    light: null,
+    editVocab: null,
+    q: "",
+    dateFrom: "",
+    dateTo: "",
+    andMode: true,
+    libRoot: "D:\\PhotoLib",
+    autoClassify: false,
+    pick: "copy",
+    device: "auto",
+    vl: false,
+    toast: "",
+    progress: 0,
+    photos: seed()
+  };
+
+  function uid(){ return Math.random().toString(16).slice(2,10); }
+  function toast(t){ S.toast = t; render(); setTimeout(function(){ if(S.toast===t){ S.toast=""; render(); } }, 2200); }
+  function go(v){ S.view=v; S.dialog=null; location.hash = v; render(); }
+  function seed(){
+    return [
+      item("IMG_1201.jpg","2024-08-03",["猫","家","室内"], "ready"),
+      item("IMG_1208.jpg","2024-08-12",["猫","家"], "ready"),
+      item("mmexport.jpg","2024-08-19",["微信","吃饭"], "ready"),
+      item("夜景.png","2024-08-28",["夜景","室外"], "ready"),
+      item("截图_设置.png","2025-01-06",["截图"], "ready"),
+      item("invoice.jpg","2025-03-02",["发票"], "ready"),
+      item("待处理1.jpg","2026-08-01",[], "pending"),
+      item("待处理2.jpg","2026-08-02",[], "pending")
+    ];
+  }
+  function item(name, date, tags, status){
+    return {
+      id: uid(), name: name, date: date, status: status,
+      color: COLORS[Math.floor(Math.random()*COLORS.length)],
+      selected: false,
+      tags: tags.map(function(n){
+        var v = VOCAB.find(function(x){ return x.name===n; });
+        return { name:n, type: v ? (v.kind==="sys"?"sys":"auto") : "auto", score: v && v.kind==="auto" ? 0.72 : null };
+      })
+    };
+  }
+
+  window.addEventListener("hashchange", function(){
+    var v = (location.hash||"#home").slice(1);
+    if(v) { S.view = v; render(); }
+  });
+
+  document.getElementById("pickFiles").onchange = function(e){
+    addFiles(e.target.files, "move");
+    e.target.value = "";
+  };
+  document.getElementById("pickFolder").onchange = function(e){
+    addFiles(e.target.files, "copy");
+    e.target.value = "";
+  };
+  function addFiles(files, mode){
+    var n = 0;
+    [].forEach.call(files, function(f){
+      if(!/^image\//.test(f.type) && !/\.(jpg|jpeg|png|webp|gif|heic|bmp)$/i.test(f.name)) return;
+      var d = new Date(f.lastModified);
+      var ds = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+      S.photos.unshift(item(f.name, ds, [], "pending"));
+      n++;
+    });
+    S.dialog = null;
+    if(!n){ toast("没有选到图片（原型只收图片文件）"); render(); return; }
+    toast("已入站 "+n+" 张 · "+(mode==="copy"?"原型不复制文件":"原型不移动文件")+" · 点「启动分类」");
+    if(S.autoClassify) startClassify();
+    else go("home");
+  }
+
+  function visible(){
+    var q = S.q.trim().split(/\s+/).filter(Boolean);
+    return S.photos.filter(function(p){
+      if(S.view==="pending" && p.status!=="pending") return false;
+      if(S.view==="failed" && p.status!=="failed") return false;
+      if(S.view==="docs" && !p.tags.some(function(t){ return t.name==="发票"||t.name==="证件"; })) return false;
+      if(S.view==="dup") return false;
+      if(S.view==="review" && !p.tags.some(function(t){ return t.type==="auto" && (t.score||1)<0.3; })) return false;
+      if(S.dateFrom && p.date < S.dateFrom) return false;
+      if(S.dateTo && p.date > S.dateTo) return false;
+      if(!q.length) return true;
+      var names = p.tags.map(function(t){return t.name;}).join(" ")+" "+p.name;
+      if(S.andMode) return q.every(function(w){ return names.indexOf(w)!==-1; });
+      return q.some(function(w){ return names.indexOf(w)!==-1; });
+    });
+  }
+
+  function counts(){
+    return {
+      all: S.photos.filter(function(p){return p.status!=="failed";}).length,
+      pending: S.photos.filter(function(p){return p.status==="pending";}).length,
+      review: S.photos.filter(function(p){return p.tags.some(function(t){return t.type==="auto" && (t.score||1)<0.3;});}).length,
+      docs: S.photos.filter(function(p){return p.tags.some(function(t){return t.name==="发票"||t.name==="证件";});}).length,
+      sel: S.photos.filter(function(p){return p.selected;}).length
+    };
+  }
+
+  function startClassify(){
+    var pend = S.photos.filter(function(p){return p.status==="pending";});
+    if(!pend.length){ toast("没有未分类的图"); go("home"); return; }
+    S.view="pending"; S.dialog=null; S.progress=0; location.hash="pending"; render();
+    var i=0, timer=setInterval(function(){
+      i++; S.progress = Math.min(100, Math.round(i/pend.length*100));
+      if(i>pend.length){
+        clearInterval(timer);
+        var pool=["猫","家","室内","夜景","吃饭"];
+        pend.forEach(function(p){
+          p.status="ready";
+          var name=pool[Math.floor(Math.random()*pool.length)];
+          if(!p.tags.some(function(t){return t.name===name;})) p.tags.push({name:name, type:"auto", score: 0.18+Math.random()*0.7});
+        });
+        toast("分类完成（原型随机打标，未跑 CLIP）");
+        go("home");
+        return;
+      }
+      render();
+    }, 280);
+  }
+
+  function tagCount(name){
+    return S.photos.filter(function(p){ return p.tags.some(function(t){return t.name===name;}); }).length;
+  }
+
+  document.getElementById("app").addEventListener("click", function(e){
+    var b = e.target.closest("[data-act]");
+    if(!b) return;
+    var a = b.getAttribute("data-act");
+    var id = b.getAttribute("data-id");
+    if(a==="go") go(b.getAttribute("data-v"));
+    else if(a==="pick-files") document.getElementById("pickFiles").click();
+    else if(a==="pick-folder") document.getElementById("pickFolder").click();
+    else if(a==="dlg") { S.dialog = b.getAttribute("data-d"); render(); }
+    else if(a==="close") { S.dialog=null; render(); }
+    else if(a==="classify") { S.dialog="classify"; render(); }
+    else if(a==="run-classify") startClassify();
+    else if(a==="light") { S.light=id; S.view="light"; location.hash="light"; render(); }
+    else if(a==="sel") {
+      if(e.shiftKey || e.ctrlKey){ var p=S.photos.find(function(x){return x.id===id;}); if(p) p.selected=!p.selected; render(); }
+      else { S.light=id; S.view="light"; location.hash="light"; render(); }
+    }
+    else if(a==="rm-tag") {
+      var p=S.photos.find(function(x){return x.id===S.light;});
+      if(p) p.tags = p.tags.filter(function(t){ return !(t.name===id && t.type!=="sys"); });
+      render();
+    }
+    else if(a==="add-tag") {
+      var p=S.photos.find(function(x){return x.id===S.light;});
+      var name=b.getAttribute("data-name");
+      if(p && name && !p.tags.some(function(t){return t.name===name;})) p.tags.push({name:name,type:"man",score:null});
+      S.dialog=null; render();
+    }
+    else if(a==="save-set") {
+      var lr=document.getElementById("libRoot");
+      var ac=document.getElementById("autoCls");
+      if(lr) S.libRoot = lr.value;
+      if(ac) S.autoClassify = ac.value==="1";
+      toast("已保存（原型只记在本页内存）");
+      render();
+    }
+    else if(a==="save-vocab") {
+      var name=document.getElementById("vn").value.trim();
+      if(!name){ toast("中文名必填"); return; }
+      if(S.editVocab){
+        var v=VOCAB.find(function(x){return x.id===S.editVocab;});
+        if(v){ v.name=name; v.prompt=document.getElementById("vp").value; v.group=document.getElementById("vg").value; }
+      } else {
+        VOCAB.push({id:uid(), name:name, group:document.getElementById("vg").value, prompt:document.getElementById("vp").value, mutex:"", kind:"manual"});
+      }
+      toast("词表已改（原型不写 tags.json）"); go("vocab");
+    }
+    else if(a==="export") toast("原型不导出文件。真产品会从正库复制到你选的目录。");
+    else if(a==="del") {
+      S.photos = S.photos.filter(function(p){ return p.id!==S.light && !p.selected; });
+      S.light=null; S.dialog=null; toast("已从原型列表去掉（未删磁盘文件）"); go("home");
+    }
+    else if(a==="batch") {
+      var sel=S.photos.filter(function(p){return p.selected;});
+      if(!sel.length){ toast("先 Ctrl+点击选几张"); return; }
+      S.dialog="batch"; render();
+    }
+    else if(a==="apply-batch") {
+      var name=document.getElementById("batchName").value;
+      S.photos.filter(function(p){return p.selected;}).forEach(function(p){
+        if(!p.tags.some(function(t){return t.name===name;})) p.tags.push({name:name,type:"man"});
+        p.selected=false;
+      });
+      S.dialog=null; toast("已给所选图加上「"+name+"」"); render();
+    }
+    else if(a==="search") {
+      S.q = document.getElementById("qbox").value;
+      S.dateFrom = document.getElementById("df").value;
+      S.dateTo = document.getElementById("dt").value;
+      go("search");
+    }
+    else if(a==="preset") {
+      var d=b.getAttribute("data-d");
+      if(d==="month"){ S.dateFrom="2024-08-01"; S.dateTo="2024-08-31"; }
+      else if(d==="year"){ S.dateFrom="2024-01-01"; S.dateTo="2024-12-31"; }
+      else { S.dateFrom=""; S.dateTo=""; }
+      go("search");
+    }
+    else if(a==="and") { S.andMode = b.getAttribute("data-m")==="1"; render(); }
+    else if(a==="qtag") { S.q = (S.q+" "+b.getAttribute("data-name")).trim(); go("search"); }
+    else if(a==="edit-vocab") { S.editVocab=id||null; go("vocab-edit"); }
+    else if(a==="inbox") toast("原型不扫描磁盘 inbox。真产品会扫 "+S.libRoot+"\\inbox");
+    else if(a==="adb") toast("原型不调 adb。");
+  });
+
+  document.getElementById("app").addEventListener("keydown", function(e){
+    if(e.key==="Enter" && e.target.id==="qbox"){ e.preventDefault(); document.querySelector('[data-act="search"]').click(); }
+  });
+
+  function chips(p){
+    return p.tags.map(function(t){
+      var cls = t.type==="man"?"man": t.type==="sys"?"sys":"auto";
+      var x = t.type==="sys"?"":'<span class="x" data-act="rm-tag" data-id="'+t.name+'">×</span>';
+      return '<span class="chip '+cls+'">'+t.name+(t.score!=null?" "+t.score.toFixed(2):"")+" "+x+"</span>";
+    }).join("");
+  }
+
+  function photoGrid(list){
+    if(!list.length) return '<div class="empty">没有符合条件的图。点「导入文件夹」或清掉搜索条件。</div>';
+    return list.map(function(p){
+      return '<div class="ph '+(p.selected?"sel":"")+'" style="background:'+p.color+'" data-act="sel" data-id="'+p.id+'"><i>'+p.name+' · '+(p.tags.map(function(t){return t.name;}).join(" ")||p.status)+'</i></div>';
+    }).join("");
+  }
+
+  function side(c){
+    var tags = ["猫","家","微信","发票","夜景"];
+    return '<aside class="side">'+
+      '<div class="brand">本地图库</div>'+
+      '<div class="hint">可运行原型 · 无后端</div>'+
+      '<div class="t '+(S.view==="home"?"on":"")+'" data-act="go" data-v="home">全部 <span>'+c.all+'</span></div>'+
+      '<div class="t '+(S.view==="pending"?"on":"")+'" data-act="go" data-v="pending">未分类 <span>'+c.pending+'</span></div>'+
+      '<div class="t '+(S.view==="review"?"on":"")+'" data-act="go" data-v="review">待确认 <span>'+c.review+'</span></div>'+
+      '<div class="t '+(S.view==="docs"?"on":"")+'" data-act="go" data-v="docs">证件/发票 <span>'+c.docs+'</span></div>'+
+      '<div class="t '+(S.view==="search"?"on":"")+'" data-act="go" data-v="search">搜索</div>'+
+      '<div class="h">时间</div>'+
+      '<div class="t" data-act="preset" data-d="year">2024</div>'+
+      '<div class="t" data-act="preset" data-d="month">2024-08</div>'+
+      '<div class="h">物品 / 场景</div>'+
+      tags.map(function(n){ return '<div class="t" data-act="qtag" data-name="'+n+'">'+n+' <span>'+tagCount(n)+'</span></div>'; }).join("")+
+      '<div class="h">设置</div>'+
+      '<div class="t '+(S.view==="set"?"on":"")+'" data-act="go" data-v="set">库根</div>'+
+      '<div class="t '+(S.view==="cls-set"?"on":"")+'" data-act="go" data-v="cls-set">分类</div>'+
+      '<div class="t '+(S.view==="vocab"?"on":"")+'" data-act="go" data-v="vocab">词表</div>'+
+    '</aside>';
+  }
+
+  function bar(c){
+    return '<div class="bar">'+
+      '<input class="q" id="qbox" placeholder="搜索标签：猫 家" value="'+S.q.replace(/"/g,"&quot;")+'">'+
+      '<button class="btn p" data-act="search">搜索</button>'+
+      '<button class="btn p" data-act="pick-folder">导入文件夹</button>'+
+      '<button class="btn" data-act="pick-files">导入图片</button>'+
+      '<button class="btn" data-act="classify">启动分类</button>'+
+      '<button class="btn" data-act="batch">批量改词条</button>'+
+      '<button class="btn" data-act="export">导出</button>'+
+      (c.sel?'<span style="color:#93c5fd;font-size:12px">已选 '+c.sel+'</span>':'')+
+    '</div>'+
+    '<div class="dates">拍摄日期 <input class="qd" id="df" type="date" value="'+S.dateFrom+'"> 至 <input class="qd" id="dt" type="date" value="'+S.dateTo+'">'+
+      '<button class="btn" data-act="preset" data-d="month">2024-08</button>'+
+      '<button class="btn" data-act="preset" data-d="year">今年按 2024</button>'+
+      '<button class="btn" data-act="preset" data-d="none">不限日期</button>'+
+      '<button class="btn '+(S.andMode?"p":"")+'" data-act="and" data-m="1">AND</button>'+
+      '<button class="btn '+(!S.andMode?"p":"")+'" data-act="and" data-m="0">OR</button>'+
+      '<span style="margin-left:auto">Ctrl+点击多选</span></div>';
+  }
+
+  function dialogs(){
+    if(S.dialog==="classify"){
+      var n=counts().pending;
+      return '<div class="mask"><div class="dlg"><div class="hd">启动分类</div><div class="bd">将对 <b>'+n+'</b> 张未分类图做<strong>假打标</strong>（随机词条）。真产品这里跑本地 CLIP，图不出网。<p style="margin-top:8px;color:#64748b">只处理未分类 · 难例 VL 关 · 证件不送云</p></div><div class="ft"><button class="ghost" data-act="go" data-v="cls-set">分类设置</button><button class="ghost" data-act="close">取消</button><button class="ok" data-act="run-classify">开始识别</button></div></div></div>';
+    }
+    if(S.dialog==="tagpick"){
+      var p=S.photos.find(function(x){return x.id===S.light;});
+      return '<div class="mask"><div class="dlg"><div class="hd">从词表添加到这张图</div><div class="bd">'+(p?p.name:"")+'<div style="margin-top:10px">'+VOCAB.map(function(v){
+        return '<button class="btn" style="margin:0 6px 6px 0" data-act="add-tag" data-name="'+v.name+'">'+v.name+'</button>';
+      }).join("")+'</div></div><div class="ft"><button class="ghost" data-act="close">取消</button></div></div></div>';
+    }
+    if(S.dialog==="batch"){
+      return '<div class="mask"><div class="dlg"><div class="hd">给已选 '+counts().sel+' 张加人手词条</div><div class="bd"><label>选择词条</label><select id="batchName" style="width:100%;margin-top:6px;padding:8px">'+VOCAB.map(function(v){return '<option>'+v.name+'</option>';}).join("")+'</select><p style="margin-top:8px;color:#64748b;font-size:12px">原型只改本页列表，不写磁盘。</p></div><div class="ft"><button class="ghost" data-act="close">取消</button><button class="ok" data-act="apply-batch">应用</button></div></div></div>';
+    }
+    if(S.dialog==="del"){
+      return '<div class="mask"><div class="dlg"><div class="hd">从原型列表删除？</div><div class="bd">不会删你电脑上的真实文件。</div><div class="ft"><button class="ghost" data-act="close">取消</button><button class="ok" style="background:#b91c1c" data-act="del">删除</button></div></div></div>';
+    }
+    return "";
+  }
+
+  function render(){
+    var c = counts();
+    var view = S.view;
+    if(location.hash==="#ops") view="home";
+    var body = "";
+    if(view==="light"){
+      var p=S.photos.find(function(x){return x.id===S.light;}) || S.photos[0];
+      if(p) S.light=p.id;
+      body = '<div class="lb"><div class="pic"><div class="big" style="background:'+(p?p.color:"#333")+'"></div></div>'+
+        '<aside class="info"><p style="font-weight:800">'+(p?p.date:"")+'</p><p style="color:#64748b;font-size:11px;margin:6px 0">'+(p?S.libRoot+"\\library\\"+p.date.slice(0,4)+"\\"+p.date.slice(5,7)+"\\"+p.name:"")+'</p>'+
+        '<p class="h">词条（× 驳回自动/人手，系统标不能删）</p>'+(p?chips(p):"")+
+        '<div style="margin-top:12px"><button class="btn p" data-act="dlg" data-d="tagpick">从词表添加</button> '+
+        '<button class="btn" data-act="go" data-v="vocab-edit">新建自定义词</button> '+
+        '<button class="btn d" data-act="dlg" data-d="del">从库删除</button></div>'+
+        '<div style="margin-top:16px"><button class="btn" data-act="go" data-v="home">返回网格</button></div></aside></div>';
+    } else if(view==="set" || view==="cls-set"){
+      body = '<div class="set">'+
+        (view==="set"?
+          '<label>库根目录</label><input id="libRoot" value="'+S.libRoot+'"><label>正库</label><input value="'+S.libRoot+'\\library\\年\\月\\" readonly><label>中转</label><input value="'+S.libRoot+'\\inbox" readonly>':
+          '<label>导入后是否自动分类</label><select id="autoCls"><option value="0"'+(S.autoClassify?"":" selected")+'>关（默认点启动分类）</option><option value="1"'+(S.autoClassify?" selected":"")+'>开</option></select>'+
+          '<p id="libRoot" hidden></p><label>主模型</label><input value="models/clip · 原型未加载权重" readonly>'+
+          '<label>难例 VL</label><input value="关（个人版默认）" readonly>'+
+          '<label>证件/发票送云</label><input value="永不送（锁死）" readonly>')+
+        '<div style="margin-top:14px"><button class="btn p" data-act="save-set">保存</button> <button class="btn" data-act="go" data-v="vocab">词表编辑</button></div></div>';
+      if(view==="set") body = body.replace('<p id="libRoot" hidden></p>','');
+      else body = '<div class="set">'+body.replace('<input id="libRoot"','<input id="libRoot" type="hidden"')+'';
+      /* simplify cls-set save still uses libRoot field */
+      if(view==="cls-set"){
+        body = '<div class="set"><label>导入后是否自动分类</label><select id="autoCls"><option value="0"'+(S.autoClassify?"":" selected")+'>关</option><option value="1"'+(S.autoClassify?" selected":"")+'>开</option></select>'+
+          '<input id="libRoot" type="hidden" value="'+S.libRoot+'">'+
+          '<label>主模型</label><input value="models/clip · 原型未加载权重" readonly>'+
+          '<label>证件/发票送云</label><input value="永不送（锁死）" readonly>'+
+          '<div style="margin-top:14px"><button class="btn p" data-act="save-set">保存</button> <button class="btn" data-act="go" data-v="vocab">打开词表编辑</button> <button class="btn" data-act="classify">去启动分类</button></div></div>';
+      }
+    } else if(view==="vocab"){
+      body = '<div class="bar"><button class="btn p" data-act="edit-vocab">新增词条</button><span style="color:#64748b;font-size:12px">改完不会重打已有图的标</span></div>'+
+        '<table class="vtbl"><tr><th>中文名</th><th>分组</th><th>CLIP 提示</th><th>已用</th></tr>'+
+        VOCAB.map(function(v){ return '<tr data-act="edit-vocab" data-id="'+v.id+'"><td>'+v.name+'</td><td>'+v.group+'</td><td>'+(v.prompt||"（人手/规则）")+'</td><td>'+tagCount(v.name)+'</td></tr>'; }).join("")+
+        '</table>';
+    } else if(view==="vocab-edit"){
+      var v = VOCAB.find(function(x){return x.id===S.editVocab;}) || {name:"", group:"用途", prompt:""};
+      body = '<div class="set"><label>中文名</label><input id="vn" value="'+v.name+'"><label>分组</label><select id="vg">'+["场景","物品","文档","人","活动","来源","用途"].map(function(g){return '<option'+(g===v.group?" selected":"")+'>'+g+'</option>';}).join("")+'</select>'+
+        '<label>CLIP 提示句</label><input id="vp" value="'+(v.prompt||"")+'"><div style="margin-top:14px"><button class="btn p" data-act="save-vocab">保存</button> <button class="btn" data-act="go" data-v="vocab">返回</button></div></div>';
+    } else if(view==="pending"){
+      body = bar(c)+'<div class="prog"><i style="width:'+S.progress+'%"></i></div><div class="list"><div class="row"><span>未分类 / 处理中</span><span>'+c.pending+' 张 · '+S.progress+'%</span></div></div><div class="grid">'+photoGrid(S.photos.filter(function(p){return p.status==="pending";}))+'</div>';
+    } else {
+      var list = visible();
+      if(view==="home" && !S.photos.length){
+        body = bar(c)+'<div class="empty">还没有图。点「导入文件夹」，会弹出系统资源管理器。</div>';
+      } else {
+        body = bar(c)+'<div class="grid">'+photoGrid(list)+'</div>';
+      }
+    }
+
+    document.getElementById("app").innerHTML =
+      '<div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>本地图库 · 可运行原型'+
+      ' · <a class="plain" href="./方案-电脑端识图分类.html">返回方案页</a></div>'+
+      '<div class="banner">能跳转、能弹系统选文件框。不复制进 D:\\PhotoLib，不跑 CLIP，刷新后演示数据重置。</div>'+
+      '<div class="shell">'+side(c)+'<section class="main">'+body+'</section></div>'+
+      dialogs()+
+      (S.toast?'<div class="toast">'+S.toast+'</div>':'');
+  }
+
+  if(location.hash) S.view = location.hash.slice(1) || "home";
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>本地图库 · UI 原型</title>
+<style>
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --surface-2:#fafbfc;
+  --border:#e5e7eb; --border-2:#eef0f3;
+  --text:#111827; --text-2:#374151; --muted:#6b7280; --muted-2:#9ca3af;
+  --accent:#2563eb; --accent-h:#1d4ed8; --accent-soft:#eff6ff; --accent-border:#bfdbfe;
+  --danger:#dc2626; --danger-soft:#fef2f2;
+  --ok:#16a34a; --ok-soft:#f0fdf4;
+  --warn:#d97706; --warn-soft:#fffbeb;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.05);
+  --shadow-md:0 4px 12px rgba(16,24,40,.08);
+  --shadow-lg:0 12px 32px rgba(16,24,40,.16);
+  --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased}
+.app{height:100%;display:flex;flex-direction:column}
+
+/* 标题栏 */
+.titlebar{height:38px;background:#ffffff;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.tb-title{font-size:13px;font-weight:600;color:var(--text-2);margin-left:4px}
+.tb-right{margin-left:auto;color:var(--muted);font-size:12px}
+
+/* 外壳 */
+.shell{flex:1;display:grid;grid-template-columns:216px 1fr;min-height:0}
+
+/* 侧栏 */
+.side{background:var(--surface);border-right:1px solid var(--border);padding:14px 10px;overflow:auto}
+.brand{font-weight:700;font-size:15px;margin:0 8px 12px;display:flex;align-items:center;gap:7px}
+.brand .logo{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#3b82f6,#2563eb);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px}
+.h{color:var(--muted-2);font-size:11px;font-weight:600;letter-spacing:.05em;margin:16px 10px 5px}
+.t{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:8px;margin-bottom:1px;cursor:pointer;font-size:13px;color:var(--text-2)}
+.t:hover{background:var(--surface-2)}
+.t.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.t span{color:var(--muted);font-size:11px;font-weight:400}
+.t.on span{color:var(--accent)}
+
+/* 主区域 */
+.main{display:flex;flex-direction:column;min-width:0;background:var(--bg)}
+.bar{display:flex;gap:8px;align-items:center;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.btn{background:var(--surface);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .15s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.p{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn.p:hover{background:var(--accent-h)}
+.btn.d{color:var(--danger);border-color:var(--border)}
+.btn.d:hover{border-color:var(--danger);color:var(--danger)}
+.btn.ghost{border-color:transparent;background:transparent}
+
+/* 搜索 */
+.searchwrap{position:relative;flex:1;min-width:200px}
+.search{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;min-height:38px;flex-wrap:wrap}
+.search .ph{color:var(--muted-2)}
+.search .chip{background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:2px 8px;font-size:12px;display:inline-flex;align-items:center;gap:5px}
+.search .chip .x{cursor:pointer;opacity:.7}
+.search .chip .x:hover{opacity:1}
+/* 搜索 popover */
+.popover{position:absolute;top:calc(100% + 6px);left:0;width:420px;max-height:420px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);z-index:50;display:flex;flex-direction:column;overflow:hidden}
+.popover .phead{padding:10px 12px;border-bottom:1px solid var(--border-2)}
+.popover .phead input{width:100%;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;outline:none}
+.popover .phead input:focus{border-color:var(--accent)}
+.popover .pbody{overflow:auto;padding:8px}
+.pgroup{margin-bottom:4px}
+.pgname{font-size:11px;font-weight:600;color:var(--muted);padding:6px 8px 3px}
+.pitem{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text-2)}
+.pitem:hover{background:var(--surface-2)}
+.pitem.on{background:var(--accent-soft);color:var(--accent);font-weight:500}
+.pitem .n{color:var(--muted);font-size:11px}
+.pitem .ck{width:16px;height:16px;border:1.5px solid var(--border);border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex-shrink:0}
+.pitem.on .ck{background:var(--accent);border-color:var(--accent)}
+
+/* 筛选 chips 行 */
+.filters{display:flex;gap:6px;align-items:center;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border-2);flex-wrap:wrap;min-height:42px}
+.filters .label{color:var(--muted);font-size:12px}
+.filters .chip{background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:3px 10px;font-size:12px;display:inline-flex;align-items:center;gap:5px;font-weight:500}
+.filters .chip .x{cursor:pointer;opacity:.7}
+.filters .chip .x:hover{opacity:1}
+.filters .clear{color:var(--muted);font-size:12px;cursor:pointer;border:none;background:none}
+.filters .clear:hover{color:var(--danger)}
+.opseg{display:flex;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-left:auto}
+.opseg button{border:none;background:none;padding:5px 12px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer}
+.opseg button.on{background:var(--accent);color:#fff}
+
+/* 日期行 */
+.dates{display:flex;gap:8px;align-items:center;padding:8px 16px;color:var(--muted);font-size:12px;flex-wrap:wrap}
+.dates input{border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:12px;color:var(--text-2);outline:none;background:var(--surface)}
+.dates .link{color:var(--accent);cursor:pointer;font-size:12px}
+.dates .link:hover{text-decoration:underline}
+
+/* 网格 */
+.grid{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:16px;align-content:start}
+.cell{background:var(--surface);border-radius:var(--radius);overflow:hidden;cursor:pointer;box-shadow:var(--shadow-sm);transition:all .15s;border:1px solid transparent}
+.cell:hover{box-shadow:var(--shadow-md);border-color:var(--accent-border);transform:translateY(-1px)}
+.cell.sel{box-shadow:0 0 0 2px var(--accent)}
+.cell .img{aspect-ratio:1;background:#e5e7eb;position:relative;overflow:hidden}
+.cell .img .ph{width:100%;height:100%;display:flex;align-items:flex-end;padding:6px}
+.cell .img .date{position:absolute;top:6px;right:6px;font-size:10px;color:#fff;background:rgba(0,0,0,.45);padding:2px 6px;border-radius:5px}
+.cell .tags{display:flex;flex-wrap:wrap;gap:4px;padding:7px 8px;min-height:26px}
+.cell .tags .tchip{font-size:10px;padding:2px 7px;border-radius:5px;font-weight:500}
+.cell .tags .more{font-size:10px;color:var(--muted-2)}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:80px 16px;line-height:1.8}
+.empty .big{font-size:40px;margin-bottom:8px}
+.empty .btn{margin-top:12px}
+
+/* 渐变占位图 */
+.p1{background:linear-gradient(135deg,#059669,#065f46)}.p2{background:linear-gradient(135deg,#2563eb,#1e3a8a)}
+.p3{background:linear-gradient(135deg,#ea580c,#7c2d12)}.p4{background:linear-gradient(135deg,#0d9488,#134e4a)}
+.p5{background:linear-gradient(135deg,#7c3aed,#3b0764)}.p6{background:linear-gradient(135deg,#64748b,#1e293b)}
+
+/* 标签芯片（灯箱内） */
+.chip{display:inline-flex;gap:5px;align-items:center;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:500;margin:0 5px 5px 0}
+.chip .x{cursor:pointer;opacity:.6;font-weight:700}
+.chip .x:hover{opacity:1}
+.chip.auto{background:#eff6ff;color:#1d4ed8}
+.chip.man{background:#f0fdf4;color:#15803d}
+.chip.sys{background:#f3f4f6;color:#6b7280;cursor:default}
+
+/* 遮罩 + 对话框 */
+.mask{position:fixed;inset:0;background:rgba(17,24,39,.45);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
+.dlg{width:min(460px,92%);background:#fff;border-radius:14px;overflow:hidden;box-shadow:var(--shadow-lg)}
+.dlg .hd{padding:14px 16px;font-weight:600;font-size:14px;border-bottom:1px solid var(--border-2)}
+.dlg .bd{padding:16px;font-size:13px;line-height:1.7;color:var(--text-2)}
+.dlg .ft{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;background:var(--surface-2);border-top:1px solid var(--border-2)}
+.dlg .ft button{border-radius:8px;padding:7px 14px;font-weight:500;cursor:pointer;font-size:13px;border:1px solid var(--border);background:#fff;color:var(--text-2)}
+.dlg .ft button.ok{background:var(--accent);border-color:var(--accent);color:#fff}
+.dlg .ft button.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.tree{border:1px solid var(--border);border-radius:8px;background:#fff;padding:6px;height:150px;overflow:auto;font-size:13px}
+.tree div{padding:5px 8px;border-radius:6px;cursor:pointer;color:var(--text-2)}
+.tree div:hover{background:var(--surface-2)}
+.tree .cur{background:var(--accent-soft);color:var(--accent)}
+
+/* 灯箱 */
+.lb{flex:1;display:grid;grid-template-columns:1fr 300px;min-height:0}
+.pic{background:#111827;display:flex;align-items:center;justify-content:center;position:relative}
+.big{width:70%;aspect-ratio:4/3;border-radius:10px}
+.nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);color:#fff;border:0;width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer;backdrop-filter:blur(4px)}
+.nav:hover{background:rgba(255,255,255,.3)}
+.nav.prev{left:12px}.nav.next{right:12px}
+.info{background:#fff;padding:18px;border-left:1px solid var(--border);overflow:auto}
+.info .apph{color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.05em;margin:14px 0 7px}
+.info .path{font-family:ui-monospace,monospace;font-size:11px;color:var(--muted-2);word-break:break-all;margin:6px 0;background:var(--surface-2);padding:6px 8px;border-radius:6px}
+
+/* 列表 / 设置 / 表格 */
+.list{padding:8px 16px;flex:1;overflow:auto}
+.row{display:flex;justify-content:space-between;padding:12px 4px;border-bottom:1px solid var(--border-2);font-size:13px}
+.row .sub{color:var(--muted);font-size:12px}
+.set{padding:20px;max-width:560px;flex:1;overflow:auto}
+.set label{display:block;color:var(--text-2);font-size:13px;font-weight:500;margin:16px 0 6px}
+.set input,.set select{width:100%;background:#fff;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;outline:none}
+.set input:focus,.set select:focus{border-color:var(--accent)}
+.set .readonly{background:var(--surface-2);color:var(--muted)}
+.vtbl{width:100%;border-collapse:collapse;font-size:13px}
+.vtbl th,.vtbl td{padding:9px 12px;border-bottom:1px solid var(--border-2);text-align:left}
+.vtbl th{color:var(--muted);font-weight:600;font-size:12px}
+.vtbl tr{cursor:pointer}
+.vtbl tr:hover{background:var(--surface-2)}
+.badge{font-size:10px;background:var(--accent-soft);color:var(--accent);border-radius:4px;padding:1px 6px;margin-left:6px}
+.badge.me{background:var(--ok-soft);color:var(--ok)}
+.badge.off{background:var(--danger-soft);color:var(--danger)}
+
+/* 进度条 */
+.prog{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:16px}
+.prog i{display:block;height:100%;background:var(--accent);transition:width .2s;border-radius:99px}
+
+/* toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;z-index:200;box-shadow:var(--shadow-lg)}
+.banner{background:var(--accent-soft);color:var(--accent);font-size:12px;padding:7px 14px;text-align:center;flex-shrink:0;border-bottom:1px solid var(--accent-border)}
+.banner a{color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script>
+(function(){
+  var VOCAB = [
+    {name:"截图", group:"来源", kind:"sys"},
+    {name:"微信", group:"来源", kind:"sys"},
+    {name:"全景", group:"来源", kind:"sys"},
+    {name:"猫", group:"物品", kind:"auto"},
+    {name:"狗", group:"物品", kind:"auto"},
+    {name:"花", group:"物品", kind:"auto"},
+    {name:"菜", group:"物品", kind:"auto"},
+    {name:"家", group:"场景", kind:"auto"},
+    {name:"室内", group:"场景", kind:"auto"},
+    {name:"室外", group:"场景", kind:"auto"},
+    {name:"夜景", group:"场景", kind:"auto"},
+    {name:"风景", group:"场景", kind:"auto"},
+    {name:"办公室", group:"场景", kind:"auto"},
+    {name:"吃饭", group:"活动", kind:"auto"},
+    {name:"旅行", group:"活动", kind:"auto"},
+    {name:"开会", group:"活动", kind:"auto"},
+    {name:"发票", group:"文档", kind:"auto", private:true},
+    {name:"证件", group:"文档", kind:"auto", private:true},
+    {name:"笔记", group:"文档", kind:"auto", private:true},
+    {name:"给爸", group:"用途", kind:"man"},
+    {name:"可发", group:"用途", kind:"man"},
+    {name:"待删", group:"用途", kind:"man"},
+    {name:"装修前", group:"用途", kind:"man"}
+  ];
+  var COLORS = ["p1","p2","p3","p4","p5","p6"];
+
+  var S = {
+    view:"home", dialog:null, light:null, editVocab:null,
+    selTags:[], tagFilter:"", searchOpen:false,
+    dateFrom:"", dateTo:"", andMode:true,
+    libRoot:"D:\\PhotoLib", autoClassify:false, threshold:"0.22",
+    toast:"", progress:0, progTimer:null, selected:{}, photos:seed()
+  };
+
+  function uid(){ return Math.random().toString(16).slice(2,10); }
+  function toast(t){ S.toast=t; render(); setTimeout(function(){ if(S.toast===t){S.toast="";render();} },2200); }
+
+  function seed(){
+    var data = [
+      {name:"IMG_1201.jpg", date:"2024-08-03", status:"ready", tags:[["猫","auto",0.81],["家","auto",0.74],["室内","auto",0.66],["2024-08","sys",null]]},
+      {name:"IMG_1208.jpg", date:"2024-08-12", status:"ready", tags:[["猫","auto",0.79],["家","auto",0.71],["给爸","man",null]]},
+      {name:"mmexport.jpg", date:"2024-08-19", status:"ready", tags:[["微信","sys",null],["吃饭","auto",0.68],["菜","auto",0.62]]},
+      {name:"夜景.png", date:"2024-08-28", status:"ready", tags:[["夜景","auto",0.19],["室外","auto",0.55]]},
+      {name:"截图_设置.png", date:"2025-01-06", status:"ready", tags:[["截图","sys",null]]},
+      {name:"invoice.jpg", date:"2025-03-02", status:"ready", tags:[["发票","auto",0.85]]},
+      {name:"证件_正面.jpg", date:"2025-04-11", status:"ready", tags:[["证件","auto",0.77]]},
+      {name:"花.jpg", date:"2025-05-20", status:"ready", tags:[["花","auto",0.83],["室外","auto",0.6]]},
+      {name:"待处理1.jpg", date:"2026-08-01", status:"pending", tags:[]},
+      {name:"待处理2.jpg", date:"2026-08-02", status:"pending", tags:[]}
+    ];
+    return data.map(function(d,i){
+      return { id:uid(), name:d.name, date:d.date, status:d.status, color:COLORS[i%COLORS.length],
+        tags:d.tags.map(function(t){ return {name:t[0], type:t[1], score:t[2]}; }) };
+    });
+  }
+
+  function go(v){ S.view=v; S.dialog=null; S.searchOpen=false; if(S.progTimer){clearInterval(S.progTimer);S.progTimer=null;} location.hash=v; render(); }
+  window.addEventListener("hashchange", function(){ var v=(location.hash||"#home").slice(1); if(v){S.view=v;S.dialog=null;render();} });
+
+  function counts(){
+    var ps=S.photos;
+    return {
+      all: ps.filter(function(p){return p.status!=="failed";}).length,
+      pending: ps.filter(function(p){return p.status==="pending";}).length,
+      review: ps.filter(function(p){return p.tags.some(function(t){return t.type==="auto" && (t.score||1)<0.3;});}).length,
+      dup: 2,
+      docs: ps.filter(function(p){return p.tags.some(function(t){return t.name==="发票"||t.name==="证件";});}).length,
+      sel: Object.keys(S.selected).length
+    };
+  }
+  function tagCount(name){ return S.photos.filter(function(p){return p.tags.some(function(t){return t.name===name;});}).length; }
+
+  function visible(){
+    return S.photos.filter(function(p){
+      if(S.view==="pending" && p.status!=="pending") return false;
+      if(S.view==="failed" && p.status!=="failed") return false;
+      if(S.view==="review" && !p.tags.some(function(t){return t.type==="auto" && (t.score||1)<0.3;})) return false;
+      if(S.view==="docs" && !p.tags.some(function(t){return t.name==="发票"||t.name==="证件";})) return false;
+      if(S.view==="dup") return false;
+      if(S.dateFrom && p.date < S.dateFrom) return false;
+      if(S.dateTo && p.date > S.dateTo) return false;
+      if(!S.selTags.length) return true;
+      var names = p.tags.map(function(t){return t.name;});
+      if(S.andMode) return S.selTags.every(function(w){return names.indexOf(w)!==-1;});
+      return S.selTags.some(function(w){return names.indexOf(w)!==-1;});
+    });
+  }
+
+  function chipHtml(t){
+    var cls = t.type==="man"?"man": t.type==="sys"?"sys":"auto";
+    var x = t.type==="sys"?"":'<span class="x" data-act="rm-tag" data-name="'+t.name+'">×</span>';
+    var score = t.score!=null ? " "+t.score.toFixed(2) : "";
+    return '<span class="chip '+cls+'">'+t.name+score+x+'</span>';
+  }
+  function tchipHtml(t){
+    var cls = t.type==="man"?"man": t.type==="sys"?"sys":"auto";
+    return '<span class="tchip '+cls+'">'+t.name+'</span>';
+  }
+
+  function photoGrid(list){
+    if(!list.length) return '<div class="empty"><div class="big">📷</div>'+emptyText()+'</div>';
+    return list.map(function(p){
+      var sel = S.selected[p.id]?" sel":"";
+      var tchips = p.tags.slice(0,3).map(tchipHtml).join("");
+      return '<div class="cell '+sel+'" data-act="sel" data-id="'+p.id+'">'+
+        '<div class="img '+p.color+'"><span class="date">'+p.date.slice(5)+'</span>'+
+        '<span class="ph">'+(p.status==="pending"?'<span style="color:#fff;font-size:11px">⏳ 待分类</span>':'')+'</span></div>'+
+        '<div class="tags">'+tchips+(p.tags.length>3?'<span class="more">+'+ (p.tags.length-3) +'</span>':'')+'</div></div>';
+    }).join("");
+  }
+  function emptyText(){
+    if(S.view==="home") return '<div style="margin-bottom:6px">还没有图片</div>点「导入文件夹」选目录，图进来后再点「启动分类」。<br><button class="btn p" data-act="pick-folder">📂 导入文件夹</button>';
+    return "没有符合条件的图。点「导入文件夹」或清掉筛选条件。";
+  }
+
+  function side(c){
+    return '<aside class="side"><div class="brand"><span class="logo">图</span>本地图库</div>'+
+      '<div class="t '+(S.view==="home"?"on":"")+'" data-act="go" data-v="home">全部 <span>'+c.all+'</span></div>'+
+      '<div class="t '+(S.view==="pending"?"on":"")+'" data-act="go" data-v="pending">未分类 <span>'+c.pending+'</span></div>'+
+      '<div class="t '+(S.view==="review"?"on":"")+'" data-act="go" data-v="review">待确认 <span>'+c.review+'</span></div>'+
+      '<div class="t '+(S.view==="dup"?"on":"")+'" data-act="go" data-v="dup">重复 <span>'+c.dup+'</span></div>'+
+      '<div class="t '+(S.view==="docs"?"on":"")+'" data-act="go" data-v="docs">可能证件 <span>'+c.docs+'</span></div>'+
+      '<div class="h">时间</div>'+
+      '<div class="t" data-act="preset" data-d="year">2024</div>'+
+      '<div class="t" data-act="preset" data-d="month">2024-08</div>'+
+      '<div class="h">高频标签</div>'+
+      ['猫','家','微信','发票','夜景'].map(function(n){return '<div class="t" data-act="qtag" data-name="'+n+'">'+n+' <span>'+tagCount(n)+'</span></div>';}).join("")+
+      '<div class="h">设置</div>'+
+      '<div class="t '+(S.view==="set"?"on":"")+'" data-act="go" data-v="set">库根</div>'+
+      '<div class="t '+(S.view==="cls-set"?"on":"")+'" data-act="go" data-v="cls-set">分类</div>'+
+      '<div class="t '+(S.view==="vocab"?"on":"")+'" data-act="go" data-v="vocab">词表</div>'+
+      '</aside>';
+  }
+
+  function searchChips(){
+    if(!S.selTags.length) return '<span class="ph">🔍 点击选择标签筛选…</span>';
+    return S.selTags.map(function(n){return '<span class="chip">'+n+' <span class="x" data-act="rm-filter" data-name="'+n+'">×</span></span>';}).join("");
+  }
+
+  function popover(){
+    var groups = {};
+    VOCAB.forEach(function(v){ (groups[v.group]=groups[v.group]||[]).push(v); });
+    var html = '<div class="popover"><div class="phead"><input id="tagFilter" placeholder="输入过滤标签…" value="'+S.tagFilter+'"></div><div class="pbody">';
+    Object.keys(groups).forEach(function(g){
+      var items = groups[g].filter(function(v){ return !S.tagFilter || v.name.indexOf(S.tagFilter)!==-1; });
+      if(!items.length) return;
+      html += '<div class="pgroup"><div class="pgname">'+g+'</div>';
+      items.forEach(function(v){
+        var on = S.selTags.indexOf(v.name)>=0;
+        html += '<div class="pitem '+(on?"on":"")+'" data-act="pick-tag" data-name="'+v.name+'">'+
+          '<span>'+v.name+(v.private?' <span style="color:var(--muted-2);font-size:11px">🔒</span>':'')+'</span>'+
+          '<span style="display:flex;align-items:center;gap:6px"><span class="n">'+tagCount(v.name)+'</span><span class="ck">'+(on?"✓":"")+'</span></span></div>';
+      });
+      html += '</div>';
+    });
+    html += '</div></div>';
+    return html;
+  }
+
+  function bar(c){
+    return '<div class="bar">'+
+      '<div class="searchwrap">'+
+        '<div class="search" data-act="toggle-search">'+searchChips()+'</div>'+
+        (S.searchOpen?popover():'')+
+      '</div>'+
+      '<button class="btn p" data-act="pick-folder">📂 导入文件夹</button>'+
+      '<button class="btn" data-act="pick-files">🖼 导入图片</button>'+
+      '<button class="btn p" data-act="classify">✨ 启动分类</button>'+
+      '<button class="btn" data-act="batch" '+(c.sel?"":"style='opacity:.45'")+'>🏷 批量</button>'+
+      '<button class="btn" data-act="export">⤓ 导出</button>'+
+      '</div>';
+  }
+
+  function filters(){
+    return '<div class="filters"><span class="label">筛选：</span>'+
+      (S.selTags.map(function(n){return '<span class="chip">'+n+' <span class="x" data-act="rm-filter" data-name="'+n+'">×</span></span>';}).join("")||'<span class="label" style="color:var(--muted-2)">未选择标签</span>')+
+      '<div class="opseg"><button class="'+(S.andMode?"on":"")+'" data-act="and" data-m="1">AND 且</button><button class="'+(!S.andMode?"on":"")+'" data-act="and" data-m="0">OR 或</button></div>'+
+      (S.selTags.length?'<button class="clear" data-act="clear-filter">清除</button>':'')+
+      '</div>';
+  }
+
+  function body(c){
+    var view = S.view;
+    if(view==="light"){
+      var p = S.photos.find(function(x){return x.id===S.light;}) || S.photos[0];
+      if(p) S.light=p.id;
+      var autos=p.tags.filter(function(t){return t.type==="auto";});
+      var syss=p.tags.filter(function(t){return t.type==="sys";});
+      var mans=p.tags.filter(function(t){return t.type==="man";});
+      return '<div class="lb"><div class="pic"><div class="big '+p.color+'"></div>'+
+        '<button class="nav prev" data-act="nav" data-d="-1">‹</button><button class="nav next" data-act="nav" data-d="1">›</button></div>'+
+        '<aside class="info"><div style="font-weight:700;font-size:15px">'+p.date+' <span style="color:var(--muted);font-weight:400;font-size:13px">19:02</span></div>'+
+        '<div class="path">'+S.libRoot+'\\library\\'+p.date.slice(0,4)+'\\'+p.date.slice(5,7)+'\\'+p.name+'</div>'+
+        '<p class="apph">自动标签（点 × 驳回）</p>'+(autos.length?autos.map(chipHtml).join(""):'<div style="color:var(--muted);font-size:12px">无</div>')+
+        '<p class="apph">系统标签（规则，不能删）</p>'+(syss.length?syss.map(chipHtml).join(""):'<div style="color:var(--muted);font-size:12px">无</div>')+
+        '<p class="apph">我的标签（最高优先）</p>'+(mans.length?mans.map(chipHtml).join(""):'<div style="color:var(--muted);font-size:12px">无</div>')+
+        '<div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:6px">'+
+        '<button class="btn p" data-act="dlg" data-d="tagpick">＋ 从词表添加</button>'+
+        '<button class="btn" data-act="go" data-v="vocab-edit">新建自定义词</button>'+
+        '<button class="btn d" data-act="dlg" data-d="del">删除</button></div>'+
+        '<div style="margin-top:16px"><button class="btn" data-act="go" data-v="home">← 返回网格</button></div></aside></div>';
+    }
+    if(view==="pending"){
+      return bar(c)+filters()+'<div class="prog"><i style="width:'+S.progress+'%"></i></div>'+
+        '<div class="list"><div class="row"><span>未分类 / 处理中</span><span class="sub">'+c.pending+' 张 · '+S.progress+'%</span></div></div>'+
+        '<div class="grid">'+photoGrid(S.photos.filter(function(p){return p.status==="pending";}))+'</div>';
+    }
+    if(view==="failed"){
+      return '<div class="list"><div class="row"><span>0byte.jpg</span><span class="sub">0 字节</span></div>'+
+        '<div class="row"><span>corrupt.heic</span><span class="sub">解码失败</span></div></div>';
+    }
+    if(view==="set" || view==="cls-set"){
+      return '<div class="set">'+
+        (view==="set" ?
+          '<label>库根目录</label><input id="libRoot" value="'+S.libRoot+'"><label>正库</label><input class="readonly" value="'+S.libRoot+'\\library\\年\\月\\" readonly><label>中转</label><input class="readonly" value="'+S.libRoot+'\\inbox" readonly>' :
+          '<input id="libRoot" type="hidden" value="'+S.libRoot+'">'+
+          '<label>导入后是否自动分类</label><select id="autoCls"><option value="0"'+(S.autoClassify?"":" selected")+'>关（默认：人点「启动分类」）</option><option value="1"'+(S.autoClassify?" selected":"")+'>开（导入完立刻跑 CLIP）</option></select>'+
+          '<label>主模型</label><input class="readonly" value="models/clip · 本地 CLIP" readonly>'+
+          '<label>落标阈值</label><input id="threshold" value="'+S.threshold+'">'+
+          '<label>难例 VL（Qwen-VL）</label><select><option selected>关（个人版默认）</option><option>开（仅低置信难例）</option></select>'+
+          '<label>证件 / 发票送云</label><input class="readonly" value="永不送（锁死）" readonly>')+
+        '<div style="margin-top:18px;display:flex;gap:8px"><button class="btn p" data-act="save-set">保存</button><button class="btn" data-act="go" data-v="vocab">词表编辑</button></div></div>';
+    }
+    if(view==="vocab"){
+      return '<div class="bar"><button class="btn p" data-act="edit-vocab">＋ 新增词条</button><span style="color:var(--muted);font-size:12px;margin-left:8px">改完不自动改已落标</span></div>'+
+        '<div style="flex:1;overflow:auto;padding:0 16px 16px"><table class="vtbl"><tr><th>中文名</th><th>分组</th><th>CLIP 提示句</th><th>已用</th><th>状态</th></tr>'+
+        VOCAB.map(function(v){return '<tr data-act="edit-vocab" data-name="'+v.name+'"><td>'+v.name+'</td><td>'+v.group+'</td><td style="color:var(--muted)">'+(v.prompt||"（人手/规则）")+'</td><td>'+tagCount(v.name)+'</td><td>启用<span class="badge '+(v.kind==="man"?"me":"")+'">'+(v.kind==="man"?"自定义":"内置")+'</span></td></tr>';}).join("")+
+        '</table></div>';
+    }
+    if(view==="vocab-edit"){
+      var v = VOCAB.find(function(x){return x.name===S.editVocab;}) || {name:"", group:"用途", prompt:""};
+      return '<div class="set"><label>中文名（筛选用这个）</label><input id="vn" value="'+v.name+'">'+
+        '<label>分组</label><select id="vg">'+["场景","物品","文档","人","活动","来源","用途"].map(function(g){return '<option'+(g===v.group?" selected":"")+'>'+g+'</option>';}).join("")+'</select>'+
+        '<label>CLIP 提示句（不要只写一个词）</label><input id="vp" value="'+(v.prompt||"")+'">'+
+        '<label>谁可以写这个标</label><select><option>模型可打 + 人手可改</option><option>仅人手（用途类）</option><option>仅规则（来源类）</option></select>'+
+        '<label>证件/发票级：禁止送云</label><select><option>否</option><option>是（锁死不送 VL）</option></select>'+
+        '<div style="margin-top:18px;display:flex;gap:8px"><button class="btn p" data-act="save-vocab">保存</button><button class="btn d" data-act="go" data-v="vocab">删除（已有引用）</button><button class="btn" data-act="go" data-v="vocab">返回</button></div></div>';
+    }
+    if(view==="dup"){
+      return '<div class="grid"><div class="cell sel"><div class="img p2"></div><div class="tags"><span class="tchip auto">正库件</span></div></div>'+
+        '<div class="cell"><div class="img p2"></div><div class="tags"><span class="tchip auto">相似 96%</span></div></div>'+
+        '<div class="cell"><div class="img p2"></div><div class="tags"><span class="tchip auto">相似 88%</span></div></div></div>';
+    }
+    var list = visible();
+    return bar(c)+filters()+'<div class="grid">'+photoGrid(list)+'</div>';
+  }
+
+  function dialogs(c){
+    if(S.dialog==="classify"){
+      return '<div class="mask"><div class="dlg"><div class="hd">启动分类</div><div class="bd">将对 <b>'+c.pending+'</b> 张未分类图跑本地 CLIP，写入词表标签。原图不改像素。<p style="margin-top:10px;font-size:12px;color:var(--muted)">☑ 只处理未分类（默认）<br>☐ 把「待确认」一起重跑<br>☐ 打开难例 VL（默认关，证件/发票永不送）</p></div><div class="ft"><button data-act="go" data-v="cls-set">分类设置</button><button data-act="close">取消</button><button class="ok" data-act="run-classify">开始识别</button></div></div></div>';
+    }
+    if(S.dialog==="tagpick"){
+      return '<div class="mask"><div class="dlg"><div class="hd">从词表选择</div><div class="bd"><div class="tree" style="height:180px">'+VOCAB.map(function(v,i){return '<div'+(i<2?' class="cur"':'')+'>'+(i<2?'☑ ':'☐ ')+v.name+'（'+v.group+'）'+(v.private?' 🔒':'')+'</div>';}).join("")+'</div><p style="margin-top:8px;color:var(--muted);font-size:12px">勾上的写成人手标签。词表里没有的去「新建自定义词」。</p></div><div class="ft"><button data-act="close">取消</button><button class="ok" data-act="close">添加到这张图</button></div></div></div>';
+    }
+    if(S.dialog==="batch"){
+      return '<div class="mask"><div class="dlg"><div class="hd">给已选 '+c.sel+' 张写人手标签</div><div class="bd"><p>添加：<span class="chip man">给爸</span> <span class="chip man">可发</span></p><p style="margin-top:8px">去掉自动标：<span class="chip auto">夜景 ×</span></p><p style="margin-top:10px;color:var(--muted);font-size:12px">只改索引，不改词表，不改像素。</p></div><div class="ft"><button data-act="close">取消</button><button class="ok" data-act="close">应用到 '+c.sel+' 张</button></div></div></div>';
+    }
+    if(S.dialog==="export"){
+      return '<div class="mask"><div class="dlg"><div class="hd">导出当前筛选</div><div class="bd"><div class="tree"><div class="cur">D:\\导出\\给爸</div><div>D:\\导出\\可发</div><div>D:\\导出\\新文件夹</div></div><p style="margin-top:8px;color:var(--muted);font-size:12px">从正库复制，不搬走原件。</p></div><div class="ft"><button data-act="close">取消</button><button class="ok" data-act="close">导出</button></div></div></div>';
+    }
+    if(S.dialog==="del"){
+      return '<div class="mask"><div class="dlg"><div class="hd">从库删除 1 张？</div><div class="bd">删除正库文件、索引、缩略图。外面备份不动。不删手机。</div><div class="ft"><button data-act="close">取消</button><button class="danger" data-act="close">删除</button></div></div></div>';
+    }
+    if(S.dialog==="import-folder"){
+      return '<div class="mask"><div class="dlg"><div class="hd">选择要导入的文件夹</div><div class="bd"><div class="tree"><div>磁盘 (D:)</div><div>　手机备份</div><div class="cur">　　DCIM</div><div>　　Camera</div><div>　微信导出</div></div><p style="margin-top:8px;color:var(--muted);font-size:12px">确定后复制进 D:\\PhotoLib\\library\\年\\月\\</p></div><div class="ft"><button data-act="close">取消</button><button class="ok" data-act="close">选择文件夹</button></div></div></div>';
+    }
+    if(S.dialog==="import-files"){
+      return '<div class="mask"><div class="dlg"><div class="hd">打开 · 导入图片</div><div class="bd"><div class="tree"><div class="cur">IMG_0001.HEIC</div><div class="cur">mmexport.jpg</div></div><p style="margin-top:8px;color:var(--muted);font-size:12px">已选 2 个 · 处理完移入正库</p></div><div class="ft"><button data-act="close">取消</button><button class="ok" data-act="close">打开</button></div></div></div>';
+    }
+    return "";
+  }
+
+  document.getElementById("app").addEventListener("click", function(e){
+    var b = e.target.closest("[data-act]");
+    if(!b) return;
+    var a = b.getAttribute("data-act");
+    var id = b.getAttribute("data-id"), name = b.getAttribute("data-name"), d = b.getAttribute("data-d"), v = b.getAttribute("data-v");
+    if(a==="go") go(v);
+    else if(a==="dlg"){ S.dialog=d; render(); }
+    else if(a==="close"){ S.dialog=null; render(); }
+    else if(a==="pick-folder"){ S.dialog="import-folder"; render(); }
+    else if(a==="pick-files"){ S.dialog="import-files"; render(); }
+    else if(a==="classify"){ S.dialog="classify"; render(); }
+    else if(a==="run-classify") startClassify();
+    else if(a==="toggle-search"){ S.searchOpen=!S.searchOpen; render(); }
+    else if(a==="pick-tag"){
+      var i=S.selTags.indexOf(name);
+      if(i>=0) S.selTags.splice(i,1); else S.selTags.push(name);
+      render();
+    }
+    else if(a==="rm-filter"){ S.selTags=S.selTags.filter(function(x){return x!==name;}); render(); }
+    else if(a==="clear-filter"){ S.selTags=[]; render(); }
+    else if(a==="sel"){
+      if(e.shiftKey || e.ctrlKey){ if(S.selected[id]) delete S.selected[id]; else S.selected[id]=1; render(); }
+      else { S.light=id; go("light"); }
+    }
+    else if(a==="nav"){ var arr=S.photos.filter(function(p){return p.status!=="failed";}); var i=arr.findIndex(function(p){return p.id===S.light;}); var n=i+parseInt(d); if(n>=0&&n<arr.length){S.light=arr[n].id; render();} }
+    else if(a==="rm-tag"){ var p=S.photos.find(function(x){return x.id===S.light;}); if(p) p.tags=p.tags.filter(function(t){return t.name!==name;}); render(); }
+    else if(a==="preset"){
+      if(d==="month"){S.dateFrom="2024-08-01";S.dateTo="2024-08-31";}
+      else if(d==="year"){S.dateFrom="2024-01-01";S.dateTo="2024-12-31";}
+      else {S.dateFrom="";S.dateTo="";}
+      render();
+    }
+    else if(a==="and"){ S.andMode = b.getAttribute("data-m")==="1"; render(); }
+    else if(a==="qtag"){ if(S.selTags.indexOf(name)<0) S.selTags.push(name); render(); }
+    else if(a==="batch"){ if(!Object.keys(S.selected).length){toast("先 Ctrl+点击选几张");return;} S.dialog="batch"; render(); }
+    else if(a==="export"){ S.dialog="export"; render(); }
+    else if(a==="edit-vocab"){ S.editVocab=name||null; go("vocab-edit"); }
+    else if(a==="save-set"){ var lr=document.getElementById("libRoot"); if(lr) S.libRoot=lr.value; var ac=document.getElementById("autoCls"); if(ac) S.autoClassify=ac.value==="1"; var th=document.getElementById("threshold"); if(th) S.threshold=th.value; toast("已保存（原型只记在内存）"); go("home"); }
+    else if(a==="save-vocab"){ var n=document.getElementById("vn").value.trim(); if(!n){toast("中文名必填");return;} toast("词表已改（原型不写 tags.json）"); go("vocab"); }
+  });
+
+  document.getElementById("app").addEventListener("input", function(e){
+    if(e.target.id==="tagFilter"){ S.tagFilter=e.target.value; render(); }
+  });
+
+  document.addEventListener("click", function(e){
+    if(S.searchOpen && !e.target.closest(".searchwrap")){ S.searchOpen=false; render(); }
+  });
+
+  function startClassify(){
+    var pend=S.photos.filter(function(p){return p.status==="pending";});
+    if(!pend.length){ toast("没有未分类的图"); S.dialog=null; go("home"); return; }
+    S.view="pending"; S.dialog=null; S.progress=0; location.hash="pending"; render();
+    var pool=["猫","家","夜景","吃饭","花","风景"];
+    var i=0;
+    S.progTimer=setInterval(function(){
+      i++; S.progress=Math.min(100, Math.round(i/pend.length*100));
+      if(i>pend.length){
+        clearInterval(S.progTimer); S.progTimer=null;
+        pend.forEach(function(p){ p.status="ready"; var n=pool[Math.floor(Math.random()*pool.length)]; if(!p.tags.some(function(t){return t.name===n;})) p.tags.push({name:n,type:"auto",score:0.3+Math.random()*0.6}); });
+        toast("分类完成（原型随机打标，未跑 CLIP）"); go("home"); return;
+      }
+      render();
+    }, 300);
+  }
+
+  function render(){
+    var c = counts();
+    var html =
+      '<div class="titlebar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span>'+
+      '<span class="tb-title">本地图库 · UI 原型</span><span class="tb-right">'+c.all+' 张 · 无后端演示</span></div>'+
+      '<div class="banner">完整交互原型 · 无真实数据 · 刷新重置 · 返回 <a href="./方案-电脑端识图分类.html">方案页</a></div>'+
+      '<div class="shell">'+side(c)+'<section class="main">'+body(c)+'</section></div>'+
+      dialogs(c)+
+      (S.toast?'<div class="toast">'+S.toast+'</div>':'');
+    document.getElementById("app").innerHTML = html;
+  }
+
+  if(location.hash) S.view = location.hash.slice(1) || "home";
+  render();
+})();
+</script>
+</body>
+</html>
