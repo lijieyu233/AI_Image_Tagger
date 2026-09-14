@@ -5,12 +5,16 @@
   "description": "本地相册识图分类 · 电脑端（Electron + Node + SQLite + Vue3 + CLIP）",
   "type": "module",
   "main": "electron/main.cjs",
+  "engines": {
+    "node": ">=22.5"
+  },
   "scripts": {
     "backend": "node backend/src/index.js",
     "build:web": "vite build",
     "dev:web": "vite",
     "electron": "electron .",
     "start": "node backend/src/index.js",
+    "test": "node --test",
     "dist": "electron-builder --dir",
     "dist:win": "electron-builder --win"
   },

@@ -1,83 +1,303 @@
 {
   "version": 1,
-  "threshold": 0.22,
+  "threshold": 0.25,
   "groups": [
     {
       "name": "来源/形式",
       "kind": "system",
-      "tags": ["截图", "微信", "全景", "连拍", "实况", "证件扫描"]
+      "tags": [
+        "截图",
+        "微信",
+        "全景",
+        "连拍",
+        "实况",
+        "证件扫描"
+      ]
     },
     {
       "name": "人",
       "kind": "auto",
-      "tags": ["自拍", "合影", "小孩", "老人", "人群", "手部特写"]
+      "tags": [
+        "自拍",
+        "合影",
+        "小孩",
+        "老人",
+        "人群",
+        "手部特写"
+      ],
+      "threshold": 0.231
     },
     {
       "name": "场景",
       "kind": "auto",
-      "mutex": ["室内", "室外"],
-      "tags": ["家", "办公室", "教室", "医院", "店", "马路", "地铁", "风景", "夜景", "室内", "室外"]
+      "mutex": [
+        "室内",
+        "室外"
+      ],
+      "tags": [
+        "家",
+        "办公室",
+        "教室",
+        "医院",
+        "店",
+        "马路",
+        "地铁",
+        "风景",
+        "夜景",
+        "室内",
+        "室外"
+      ],
+      "threshold": 0.214
     },
     {
       "name": "活动",
       "kind": "auto",
-      "tags": ["吃饭", "旅行", "开会", "运动", "演出", "婚礼", "考试"]
+      "tags": [
+        "吃饭",
+        "旅行",
+        "开会",
+        "运动",
+        "演出",
+        "婚礼",
+        "考试"
+      ],
+      "threshold": 0.225,
+      "disabled": false
     },
     {
       "name": "物品",
       "kind": "auto",
-      "tags": ["猫", "狗", "花", "菜", "文件", "屏幕", "车", "商品", "包装"]
+      "tags": [
+        "猫",
+        "狗",
+        "花",
+        "菜",
+        "文件",
+        "屏幕",
+        "车",
+        "商品",
+        "包装"
+      ],
+      "threshold": 0.23,
+      "disabled": false
     },
     {
       "name": "文档",
       "kind": "auto",
       "private": true,
-      "tags": ["身份证", "发票", "凭证", "笔记", "名片"]
+      "tags": [
+        "身份证",
+        "发票",
+        "凭证",
+        "笔记",
+        "名片"
+      ],
+      "threshold": 0.231
     },
     {
       "name": "用途",
       "kind": "manual",
-      "tags": ["可发", "待删", "模糊", "重复", "壁纸", "备份即可"]
+      "tags": [
+        "可发",
+        "待删",
+        "模糊",
+        "重复",
+        "壁纸",
+        "备份即可"
+      ]
     }
   ],
   "prompts": {
-    "自拍": "a selfie photo of a person's face",
-    "合影": "a group photo of several people together",
-    "小孩": "a photo of a child",
-    "老人": "a photo of an elderly person",
-    "人群": "a crowd of many people",
-    "手部特写": "a close-up photo of a hand",
-    "家": "a photo taken at home, indoor living space",
-    "办公室": "a photo taken in an office with desks and computers",
-    "教室": "a photo taken in a classroom with desks and a blackboard",
-    "医院": "a photo taken in a hospital",
-    "店": "a photo taken inside a store or shop",
-    "马路": "a photo of a street or road",
-    "地铁": "a photo taken in a subway station",
-    "风景": "a photo of a landscape scenery, mountains or nature",
-    "夜景": "a photo taken at night with city lights",
-    "室内": "an indoor photo, interior of a room",
-    "室外": "an outdoor photo, outside",
-    "吃饭": "a photo of food on a table during a meal",
-    "旅行": "a travel photo, tourist attraction",
-    "开会": "a photo of people in a meeting room",
-    "运动": "a photo of sports or exercise",
-    "演出": "a photo of a stage performance or concert",
-    "婚礼": "a photo of a wedding ceremony",
-    "考试": "a photo of an exam paper or test",
-    "猫": "a photo of a cat",
-    "狗": "a photo of a dog",
-    "花": "a photo of flowers",
-    "菜": "a photo of food dishes",
-    "文件": "a photo of documents or paper files",
-    "屏幕": "a photo of a computer or phone screen",
-    "车": "a photo of a car",
-    "商品": "a photo of a product for sale",
-    "包装": "a photo of a package or box",
-    "身份证": "a photo of an identity card",
-    "发票": "a photo of a receipt or invoice",
-    "凭证": "a photo of a voucher or certificate",
-    "笔记": "a photo of handwritten notes",
-    "名片": "a photo of a business card"
-  }
+    "自拍": [
+      "a selfie photo of a person's face",
+      "a close-up selfie taken with a front camera",
+      "a person taking a picture of themselves"
+    ],
+    "合影": [
+      "a group photo of several people together",
+      "several people posing together for a picture",
+      "friends or family standing together in a photo"
+    ],
+    "小孩": [
+      "a photo of a child",
+      "a young kid playing or smiling",
+      "a toddler or young children in the picture"
+    ],
+    "老人": [
+      "a photo of an elderly person",
+      "an old man or old woman with grey hair",
+      "a senior citizen in the picture"
+    ],
+    "人群": [
+      "a crowd of many people",
+      "a large crowd gathered at an event",
+      "many people walking in a busy place"
+    ],
+    "手部特写": [
+      "a close-up photo of a hand",
+      "a close-up of fingers holding something",
+      "a hand filling the frame in close-up"
+    ],
+    "家": [
+      "a photo taken at home, indoor living space",
+      "a living room or bedroom of a house",
+      "a cozy home interior with a sofa or bed"
+    ],
+    "办公室": [
+      "a photo taken in an office with desks and computers",
+      "a workspace with a desk, chair and monitor",
+      "an office room with computers and paperwork"
+    ],
+    "教室": [
+      "a photo taken in a classroom with desks and a blackboard",
+      "a classroom with rows of desks and a whiteboard",
+      "a school room with a chalkboard and students' desks"
+    ],
+    "医院": [
+      "a photo taken in a hospital",
+      "a hospital ward or clinic room with medical equipment",
+      "a medical environment with doctors or nurses"
+    ],
+    "店": [
+      "a photo taken inside a store or shop",
+      "shelves of products in a supermarket or shop",
+      "a retail store interior with goods on display"
+    ],
+    "马路": [
+      "a photo of a street or road",
+      "a road with cars and traffic",
+      "a city street with buildings and vehicles"
+    ],
+    "地铁": [
+      "a photo taken in a subway station",
+      "an underground metro platform or train",
+      "people waiting on a subway platform"
+    ],
+    "风景": [
+      "a photo of a landscape scenery, mountains or nature",
+      "a wide natural landscape with sky",
+      "beautiful scenery of mountains, sea or countryside"
+    ],
+    "夜景": [
+      "a photo taken at night with city lights",
+      "a city skyline glowing at night",
+      "a dark night scene with illuminated buildings or streets"
+    ],
+    "室内": [
+      "an indoor photo, interior of a room",
+      "a picture taken inside a building",
+      "an indoor scene with walls and ceiling"
+    ],
+    "室外": [
+      "an outdoor photo, outside",
+      "a picture taken outdoors in the open air",
+      "an outdoor scene under the sky"
+    ],
+    "吃饭": [
+      "a photo of food on a table during a meal",
+      "people eating together at a dining table",
+      "a meal with dishes and drinks on a restaurant table"
+    ],
+    "旅行": [
+      "a travel photo, tourist attraction",
+      "a famous landmark visited by tourists",
+      "a vacation photo at a scenic tourist spot"
+    ],
+    "开会": [
+      "a photo of people in a meeting room",
+      "colleagues having a meeting around a table",
+      "a business meeting with laptops and a projector"
+    ],
+    "运动": [
+      "a photo of sports or exercise",
+      "people playing sports or working out",
+      "an athlete in action during a game"
+    ],
+    "演出": [
+      "a photo of a stage performance or concert",
+      "performers on a stage under spotlights",
+      "a concert crowd watching a live show"
+    ],
+    "婚礼": [
+      "a photo of a wedding ceremony",
+      "a bride and groom at their wedding",
+      "a wedding scene with a white dress and flowers"
+    ],
+    "考试": [
+      "a photo of an exam paper or test",
+      "students taking a written exam",
+      "an answer sheet or test paper with questions"
+    ],
+    "猫": [
+      "a photo of a cat",
+      "a cat looking at the camera",
+      "a cute kitten indoors or outdoors"
+    ],
+    "狗": [
+      "a photo of a dog",
+      "a dog looking at the camera",
+      "a puppy playing outdoors"
+    ],
+    "花": [
+      "a photo of flowers",
+      "blooming flowers in a garden",
+      "a close-up of a colorful flower"
+    ],
+    "菜": [
+      "a photo of food dishes",
+      "a plate of cooked food or a dish",
+      "delicious dishes on a dining table"
+    ],
+    "文件": [
+      "a photo of documents or paper files",
+      "stacked papers or printed documents",
+      "an open document or paperwork on a desk"
+    ],
+    "屏幕": [
+      "a photo of a computer or phone screen",
+      "a screen displaying content or an interface",
+      "a laptop or monitor screen turned on"
+    ],
+    "车": [
+      "a photo of a car",
+      "a car parked or driving on the road",
+      "the exterior or interior of an automobile"
+    ],
+    "商品": [
+      "a photo of a product for sale",
+      "a product shot on a clean background",
+      "merchandise or goods displayed for sale"
+    ],
+    "包装": [
+      "a photo of a package or box",
+      "a parcel or courier box",
+      "product packaging with a label"
+    ],
+    "身份证": [
+      "a photo of an identity card",
+      "an ID card held in a hand",
+      "a personal identification document with a portrait"
+    ],
+    "发票": [
+      "a photo of a receipt or invoice",
+      "a paper receipt with printed amounts",
+      "an invoice or bill for payment"
+    ],
+    "凭证": [
+      "a photo of a voucher or certificate",
+      "an official certificate or credential document",
+      "a stamped official paper document"
+    ],
+    "笔记": [
+      "a photo of handwritten notes",
+      "handwriting in a notebook",
+      "study notes written with a pen on paper"
+    ],
+    "名片": [
+      "a photo of a business card",
+      "a business card with a name and logo",
+      "a contact card placed on a table"
+    ]
+  },
+  "thresholds_auto": true
 }

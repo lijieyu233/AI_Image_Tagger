@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { getDb, ensureTag, upsertTag } from './db.js';
 import { sha256File, aHash } from './hashing.js';
 import { readMeta, makeThumb, readSize } from './media.js';
-import { IMAGE_EXTS, HEIC_EXTS } from './config.js';
+import { IMAGE_EXTS, HEIC_EXTS, VIDEO_EXTS, THUMBS_DIR } from './config.js';
 
 // 规则标：来源/形式，不耗模型
 export function ruleTags(fullPath, width, height) {
@@ -28,24 +28,27 @@ export function isImage(file) {
   return null;
 }
 
-// 递归列出目录下所有图片
+// 递归列出目录下所有图片；同时统计视频数量（暂不支持，导入结果里明确提示而不是静默忽略）
 export async function listImages(dir) {
-  if (!fs.existsSync(dir)) return [];
+  if (!fs.existsSync(dir)) return { items: [], videos: 0 };
   const entries = await fs.promises.readdir(dir, { recursive: true });
-  const out = [];
+  const items = [];
+  let videos = 0;
   for (const rel of entries) {
     const full = path.join(dir, rel);
     let stat;
     try { stat = await fs.promises.stat(full); } catch { continue; }
     if (!stat.isFile()) continue;
+    const ext = path.extname(rel).toLowerCase();
+    if (VIDEO_EXTS.has(ext)) { videos++; continue; }
     const kind = isImage(rel);
     if (kind) {
       const parts = rel.split(path.sep);
       const sourceDir = parts.length > 1 ? parts[0] : path.basename(dir);
-      out.push({ full, rel, sourceDir, kind });
+      items.push({ full, rel, sourceDir, kind });
     }
   }
-  return out;
+  return { items, videos };
 }
 
 // 处理单个文件，返回 { photoId, status, error }
@@ -53,17 +56,21 @@ export async function importFile(fullPath, sourceDir) {
   const db = getDb();
   const stat = fs.statSync(fullPath);
 
-  // 已入库（按路径）直接跳过
-  const existing = db.prepare('SELECT id, file_hash FROM photos WHERE path = ?').get(fullPath);
+  // 已入库（按路径）：内容相同跳过；内容变化则原地更新
+  const existing = db.prepare('SELECT id, file_hash, thumb_path FROM photos WHERE path = ?').get(fullPath);
   const fileHash = await sha256File(fullPath);
 
+  let photoId;
+  let isUpdate = false;
   if (existing) {
     if (existing.file_hash === fileHash) return { photoId: existing.id, status: 'skip' };
+    isUpdate = true;
+    photoId = existing.id;
   }
 
   // 按文件哈希去重：不同路径但内容相同
   const byHash = db.prepare('SELECT id FROM photos WHERE file_hash = ?').get(fileHash);
-  if (byHash) return { photoId: byHash.id, status: 'dup' };
+  if (byHash && !isUpdate) return { photoId: byHash.id, status: 'dup' };
 
   const meta = await readMeta(fullPath);
   let width = 0, height = 0;
@@ -75,19 +82,32 @@ export async function importFile(fullPath, sourceDir) {
     width = size.width; height = size.height;
   } catch { /* 坏图 */ }
 
-  const ins = db.prepare(`
-    INSERT INTO photos
-      (path, file_hash, phash, bytes, width, height, taken_at, imported_at,
-       camera, gps_lat, gps_lon, source_dir, thumb_path, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ready')
-  `);
-
-  const info = ins.run(
-    fullPath, fileHash, phash, stat.size, width, height,
-    meta.takenAt, new Date().toISOString(),
-    meta.camera, meta.gpsLat, meta.gpsLon, sourceDir, thumbPath,
-  );
-  const photoId = Number(info.lastInsertRowid);
+  if (!isUpdate) {
+    const ins = db.prepare(`
+      INSERT INTO photos
+        (path, file_hash, phash, bytes, width, height, taken_at, imported_at,
+         camera, gps_lat, gps_lon, source_dir, thumb_path, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ready')
+    `);
+    const info = ins.run(
+      fullPath, fileHash, phash, stat.size, width, height,
+      meta.takenAt, new Date().toISOString(),
+      meta.camera, meta.gpsLat, meta.gpsLon, sourceDir, thumbPath,
+    );
+    photoId = Number(info.lastInsertRowid);
+  } else {
+    // 原地更新：刷新元数据，清掉旧的自动/规则标签（保留人工标签），删旧缩略图
+    db.prepare(`
+      UPDATE photos SET file_hash=?, bytes=?, width=?, height=?, taken_at=?,
+        camera=?, gps_lat=?, gps_lon=?, source_dir=?, status='ready', thumb_path=NULL
+      WHERE id=?
+    `).run(fileHash, stat.size, width, height, meta.takenAt,
+           meta.camera, meta.gpsLat, meta.gpsLon, sourceDir, photoId);
+    db.prepare(`DELETE FROM photo_tags WHERE photo_id=? AND source IN ('rule','clip')`).run(photoId);
+    if (existing.thumb_path) {
+      try { fs.unlinkSync(path.join(THUMBS_DIR, existing.thumb_path)); } catch { /* 已不存在 */ }
+    }
+  }
 
   try {
     thumbPath = await makeThumb(fullPath, photoId);
@@ -114,18 +134,18 @@ export async function importFile(fullPath, sourceDir) {
     upsertTag(photoId, tagId, 'rule', 1.0);
   }
 
-  return { photoId, status: 'new' };
+  return { photoId, status: isUpdate ? 'updated' : 'new' };
 }
 
 // 全量导入一个目录，返回统计
 export async function runImport(dir) {
   const db = getDb();
-  const files = await listImages(dir);
+  const { items: files, videos } = await listImages(dir);
   const job = db.prepare('INSERT INTO jobs (type, status, total, done) VALUES (?, ?, ?, 0)')
     .run('import', 'running', files.length);
   const jobId = Number(job.lastInsertRowid);
 
-  const stats = { total: files.length, new: 0, dup: 0, skip: 0, failed: 0, heic: 0 };
+  const stats = { total: files.length, new: 0, updated: 0, dup: 0, skip: 0, failed: 0, heic: 0, video: videos };
   const failed = [];
 
   for (let i = 0; i < files.length; i++) {

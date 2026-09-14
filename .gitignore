@@ -1,10 +1,12 @@
 node_modules/
 web/dist/
+web/.build/
 data/
 .cowork-temp/
 runtime/node.exe
 runtime/node_modules/
 runtime/package-lock.json
 release/
+.workbuddy/
 *.log
 .DS_Store

@@ -1,10 +1,13 @@
 import { DatabaseSync } from 'node:sqlite';
+import fs from 'node:fs';
+import path from 'node:path';
 import { DB_PATH, loadTags } from './config.js';
 
 let db = null;
 
 export function getDb() {
   if (db) return db;
+  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
   db = new DatabaseSync(DB_PATH);
   db.exec('PRAGMA journal_mode = WAL;');
   db.exec('PRAGMA foreign_keys = ON;');
@@ -62,13 +65,16 @@ function migrate(d) {
       status TEXT NOT NULL,
       total  INTEGER DEFAULT 0,
       done   INTEGER DEFAULT 0,
-      error  TEXT
+      error  TEXT,
+      stats  TEXT
     );
 
     CREATE INDEX IF NOT EXISTS idx_photo_tags_tag  ON photo_tags(tag_id);
     CREATE INDEX IF NOT EXISTS idx_photo_tags_photo ON photo_tags(photo_id);
     CREATE INDEX IF NOT EXISTS idx_photos_hash      ON photos(file_hash);
   `);
+  // 旧库迁移：jobs 补 stats 列（打标统计 JSON）
+  try { d.exec('ALTER TABLE jobs ADD COLUMN stats TEXT'); } catch { /* 已存在 */ }
 }
 
 // 词表标签 -> 库里 tags 表（幂等）
@@ -101,7 +107,8 @@ export function upsertTag(photoId, tagId, source, confidence = null) {
     VALUES (?, ?, ?, ?, 0)
     ON CONFLICT(photo_id, tag_id) DO UPDATE SET
       source = excluded.source,
-      confidence = excluded.confidence
+      confidence = excluded.confidence,
+      rejected = 0
   `).run(photoId, tagId, source, confidence);
 }
 
@@ -117,6 +124,20 @@ export function deletePhotoTag(photoId, tagId, action = 'remove') {
   d.prepare(`DELETE FROM photo_tags WHERE photo_id = ? AND tag_id = ?`).run(photoId, tagId);
   d.prepare(`INSERT INTO feedback (photo_id, tag_id, action, created_at) VALUES (?, ?, ?, ?)`)
     .run(photoId, tagId, action, new Date().toISOString());
+}
+
+// 后台任务进度更新 / 查询（导入与打标共用 jobs 表）
+export function updateJob(id, fields) {
+  const d = getDb();
+  const keys = Object.keys(fields || {});
+  if (!keys.length) return;
+  const set = keys.map((k) => `${k} = ?`).join(', ');
+  d.prepare(`UPDATE jobs SET ${set} WHERE id = ?`).run(...keys.map((k) => fields[k]), id);
+}
+
+export function getJob(id) {
+  const d = getDb();
+  return d.prepare('SELECT * FROM jobs WHERE id = ?').get(id);
 }
 
 // 每个标签被人手驳回的次数（用于微调打标阈值）
